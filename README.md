@@ -1,4 +1,4 @@
-# Title : Evolution of the network of actors in the film industry through time 
+# Evolution of the network of actors in the film industry through time 
 
 ## 1. Abstract :
 This project aims to analyse and to map the evolution of the network of actors through time and  especially to determine the influence of different factors on the network. This interconnected system between actors, directors, films is interesting as it is governed and influenced by a multitude of factors such as ethnicity, movie genre, success, etc. In order to perform our analysis, we will first find and collect more data regarding film directors. After that, the network of actors and the network of directors will both be mapped and linked. A multitude of clusters could arise from those network and will be analysed. Moreover, different statistical analysis will be perform in order to see correlation between factors and to define the most influenced factors in the evolution of the network. By doing so, it is possible to conclude patterns across the different evolutions of each actors networks. 
