@@ -1,11 +1,11 @@
 # Evolution of the network of actors in the film industry through time 
 
-## 1. Abstract :
+## 1. Abstract : => réparer le titre
 
 The dataset that will be analyse during this project is the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/). This dataset provides lots of informations about +80000 movies. With this dataset as a base, this project aims to analyse and to map the evolution of the network of actors through time. This interconnected system between actors, directors and films is interesting as it is governed and influenced by a multitude of factors such as ethnicity, movie genre, etc. To perform our analysis, we will first find and collect more [data](https://datasets.imdbws.com) regarding film directors. After that, the network of actors and directors will be mapped and linked. A multitude of clusters could arise from those networks and will be analysed. Moreover, different statistical analysis will be performed in order to see correlation between different factors. By doing so, it is possible to conclude patterns across the different evolutions of each actors’networks. 
 
 ## 2. Research Questions : 
-Principal axes : (to be refined into questions)
+Principal axes : (to be refined into questions and add explanations/axes below)
 * Network through time
 * Factor determining clusters (ethnicity, genre, genre of movie)
 * Relation and network between actors and directors 
@@ -29,7 +29,8 @@ Old questions :
 * Title.ratings.tsv.gz => unique index of film and ratings, number of votes
 * Most of those datasets contains irrelevant information for our analysis and hence rows/columns were discard. This was motivated by the fact that each dataset were larger than 500mo and some more than Go. As we did not want to fill all the available space on Github and to load each time Go of data when we will use the python file, we decided to drop entries in the different database.  
 
-## 4. Methods :
+## 4. Methods : 
+=> rajouter les méthodes de network/mapping de Pierre (literature review aussi)
 * Mapping the whole network (different map), clustering method (Unsupervised learning, K-NN,…), literature review, statistics (T-test, Chi2, …)
 
 ## 5. Organisation of the github repo : 
