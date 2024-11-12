@@ -2,7 +2,7 @@
 
 ## 1. Abstract :
 
-This project aims to analyse and to map the evolution of the network of actors through time and  especially to determine the influence of different factors on the network. This interconnected system between actors, directors, films is interesting as it is governed and influenced by a multitude of factors such as ethnicity, movie genre, success, etc. In order to perform our analysis, we will first find and collect more data regarding film directors. After that, the network of actors and the network of directors will both be mapped and linked. A multitude of clusters could arise from those network and will be analysed. Moreover, different statistical analysis will be perform in order to see correlation between factors and to define the most influenced factors in the evolution of the network. By doing so, it is possible to conclude patterns across the different evolutions of each actors networks. 
+The dataset that will be analyse during this project is the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/). This dataset provides lots of informations about +80000 movies. With this dataset as a base, this project aims to analyse and to map the evolution of the network of actors through time. This interconnected system between actors, directors and films is interesting as it is governed and influenced by a multitude of factors such as ethnicity, movie genre, etc. To perform our analysis, we will first find and collect more [data](https://datasets.imdbws.com) regarding film directors. After that, the network of actors and directors will be mapped and linked. A multitude of clusters could arise from those networks and will be analysed. Moreover, different statistical analysis will be performed in order to see correlation between different factors. By doing so, it is possible to conclude patterns across the different evolutions of each actors’networks. 
 
 ## 2. Research Questions : 
 Principal axes : (to be refined into questions)
@@ -22,7 +22,7 @@ Old questions :
 * Impact of a specific movie on relation and network of actors ?
 
 ## 3. Proposed additional dataset : 
-IMDb database : Huge database of information about film (millions of movies, series,...), directors, crew member
+[IMDb database](https://datasets.imdbws.com) : Huge database of information about film (millions of movies, series,...), directors, crew member [(readme.md of the database)](https://developer.imdb.com/non-commercial-datasets/)
 * Name.basics.tsv.gz => unique index of the name and the according name
 * Title.basics.tsv.gz => unique index of  film and other information (we only use the index and name of the film)
 * Title.crew.tsv.gz => unique index of film and unique index of directors and writers
