@@ -22,7 +22,7 @@ Old questions :
 * Impact of a specific movie on relation and network of actors ?
 
 ## 3. Proposed additional dataset : 
-IMDb database : Huge database of information about film (10’000’000 movies), directors, crew member
+IMDb database : Huge database of information about film (millions of movies, series,...), directors, crew member
 * Name.basics.tsv.gz => unique index of the name and the according name
 * Title.basics.tsv.gz => unique index of  film and other information (we only use the index and name of the film)
 * Title.crew.tsv.gz => unique index of film and unique index of directors and writers
