@@ -1,6 +1,6 @@
 # Evolution of the network of actors in the film industry through time 
 
-## 1. Abstract : => réparer le titre
+## 1. Abstract :
 
 The dataset that will be analyse during this project is the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/). This dataset provides lots of informations about +80000 movies. With this dataset as a base, this project aims to analyse and to map the evolution of the network of actors through time. This interconnected system between actors, directors and films is interesting as it is governed and influenced by a multitude of factors such as ethnicity, movie genre, etc. To perform our analysis, we will first find and collect more [data](https://datasets.imdbws.com) regarding film directors. After that, the network of actors and directors will be mapped and linked. A multitude of clusters could arise from those networks and will be analysed. Moreover, different statistical analysis will be performed in order to see correlation between different factors. By doing so, it is possible to conclude patterns across the different evolutions of each actors’networks. 
 
@@ -30,8 +30,22 @@ Old questions :
 * Most of those datasets contains irrelevant information for our analysis and hence rows/columns were discard. This was motivated by the fact that each dataset were larger than 500mo and some more than Go. As we did not want to fill all the available space on Github and to load each time Go of data when we will use the python file, we decided to drop entries in the different database.  
 
 ## 4. Methods : 
-=> rajouter les méthodes de network/mapping de Pierre (literature review aussi)
-* Mapping the whole network (different map), clustering method (Unsupervised learning, K-NN,…), literature review, statistics (T-test, Chi2, …)
+Different methods will be use in order to answer to our research questions :
+1. Literature review :
+   * Making some research on network mapping and statistics in order to determine relevant factors that can be used in order to analyse networks, edge and nodes in our project. This can be done by looking at the course from last year as it covered in the last week networks or by simply looking at some articles and project online. 
+3. Mapping different network of actors and directors :
+   * Linking different actors based on the same movie
+   * Linking different actors on the same directors
+   * Linking different actors based multiple factors (movie and ethnicity)
+4. Unsupervised learning :
+   * Using clustering method such as K-NN in order to determine cluster and potentially different type of relation between actors or event type of actors or directors
+6. Statistics :
+   * Using statistical approach in order to determine correlations between factors and to determine the most influential factors on different networks
+   * T-test, Chi2, …
+8. Networks statistics :
+   * As we will analyse networks, it is necessary to compute and to define coefficient and value that can be used in order to make observations and conclusion about our data. As such, based on our literature review, we will use the following :
+   * Diameters, largest nodes, hubs classification, shortest path, transitivity, clustering coefficient, Katz centrality, betweenness centrality, etc.
+
 
 ## 5. Organisation of the github repo : 
 
