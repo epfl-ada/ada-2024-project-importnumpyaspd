@@ -47,7 +47,7 @@ Different methods will be use in order to answer to our research questions :
    * Diameters, largest nodes, hubs classification, shortest path, transitivity, clustering coefficient, Katz centrality, betweenness centrality, etc.
 
 
-## 5. Organisation of the github repo : 
+## 5. Organization of the github repo : 
 
 ```
 ├── data                        <- Project data files
@@ -82,7 +82,7 @@ Faire un tableau ?
 * Pierre : literature review of networks 
 * Thibault : literature review of networks
 * Thomas : Pre-processing of data
-* Émile : 
+* Emile : 
 * Alexandre :
 * À faire : rédaction sur le site Jekill, homework 2 
 
