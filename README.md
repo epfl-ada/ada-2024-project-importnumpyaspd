@@ -7,7 +7,7 @@ The dataset that will be analyse during this project is the [CMU Movie Summary c
 ## 2. Research Questions : 
 Principal axes : (to be refined into questions and add explanations/axes below)
 * Network through time
-  * What are the major factor of characterisation of actors career and network evolution ?
+  * What are the main factors characterizing the careers of the players and the evolution of the network??
 * Factor determining clusters (ethnicity, genre, genre of movie)
 * Relation and network between actors and directors 
 
