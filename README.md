@@ -1,53 +1,56 @@
 # Evolution of the network of actors in the film industry through time 
 
 ## 1. Abstract :
-
 The dataset that will be analyse during this project is the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/). This dataset provides lots of informations about +80000 movies. With this dataset as a base, this project aims to analyse and to map the evolution of the network of actors through time. This interconnected system between actors, directors and films is interesting as it is governed and influenced by a multitude of factors such as ethnicity, movie genre, etc. To perform our analysis, we will first find and collect more [data](https://datasets.imdbws.com) regarding film directors. After that, the network of actors and directors will be mapped and linked. A multitude of clusters could arise from those networks and will be analysed. Moreover, different statistical analysis will be performed in order to see correlation between different factors. By doing so, it is possible to conclude patterns across the different evolutions of each actors’networks. The evolution of these networks will also be analyzed in conjunction with the evolution of the actors' careers, to see if any trends emerge.
 
 ## 2. Research Questions : 
-Principal axes : (to be refined into questions and add explanations/axes below)
+Principal axes : 
 * Network through time
   * What are the main factors characterizing the careers of the players and the evolution of the network??
 * Factor determining clusters (ethnicity, genre, genre of movie)
 * Relation and network between actors and directors 
 
-Old questions : 
-* How is an actor network’s impacted during his career ?
-* What impacts this evolution ? ethnicity, gender, genre of movie
-* Duo, trio or quartet of actors ? Trend to work together multiple times ? 
-* Specific crew or chosen actors per director ? (multiple link between actor and director, working multiple times together)
-* Cluster based on different factors (ethnicity, genre, number of films together) ?
-* Does the network and its form evolved during the last century ? Different trend ?
-* Different “type” of actor ? 
-* What are the relation between successful actors and movie directors ?
-* Impact of a specific movie on relation and network of actors ?
-
 ## 3. Proposed additional dataset : 
-[IMDb database](https://datasets.imdbws.com) : Huge database of information about film (millions of movies, series,...), directors, crew member [(readme.md of the database)](https://developer.imdb.com/non-commercial-datasets/)
+[IMDb database](https://datasets.imdbws.com) : Huge database of information about film (millions of movies, series,...), directors,... [(readme.md of the database)](https://developer.imdb.com/non-commercial-datasets/)
 * Name.basics.tsv.gz => unique index of the name and the according name
-* Title.basics.tsv.gz => unique index of  film and other information (we only use the index and name of the film)
+* Title.basics.tsv.gz => unique index of film and other information about them
 * Title.crew.tsv.gz => unique index of film and unique index of directors and writers
 * Title.ratings.tsv.gz => unique index of film and ratings, number of votes
-* Most of those datasets contains irrelevant information for our analysis and hence rows/columns were discard. This was motivated by the fact that each dataset were larger than 500mo and some more than Go. As we did not want to fill all the available space on Github and to load each time Go of data when we will use the python file, we decided to drop entries in the different database. 
+* As the datasets are quite big (500mo to 1Go), they were not push to the repo in github. Specific information about the ratings and the profile of the director were taken from the database. The pre-processing is explain in data_preprocessing.ipynb.
 
 ## 4. Methods : 
-Different methods will be use in order to answer to our research questions :
-1. Literature review :
-   * Making some research on network mapping and statistics in order to determine relevant factors that can be used in order to analyse networks, edge and nodes in our project. This can be done by looking at the course from last year as it covered in the last week networks or by simply looking at some articles and project online. 
-3. Mapping different network of actors and directors :
-   * Linking different actors based on the same movie
-   * Linking different actors on the same directors
-   * Linking different actors based multiple factors (movie and ethnicity)
-4. Unsupervised learning :
-   * Using clustering method such as K-NN in order to determine cluster and potentially different type of relation between actors or event type of actors or directors
-   * Using clustering method such as K-NN on the evolution of the actors networks metrics and actors career to see if trends emerge.
-6. Statistics :
-   * Using statistical approach in order to determine correlations between factors and to determine the most influential factors on different networks
-   * Use statistical tests such as T-test, Chi2 to assess whether the distribution of certain actor attributes (most-played film genre, ethnicity, ...) in different network groups is significantly different.
-8. Networks metrics :
-   * As we will analyse networks, it is necessary to compute and to define coefficient and value that can be used in order to make observations and conclusion about our data. As such, based on our literature review, we will use the following :
-   * Diameters, nodes degree, hubs classification, shortest path, transitivity, clustering coefficient, Katz centrality, betweenness centrality, etc.
+Part 1 : Beginning
+*	Data-scraping and finding additional dataset:
+ *	After choosing and deciding on the project, it was decided that we should search for ways to enrich our networks. The most direct solution was to add more information about the movie as well as more people to the networks. Hence, we chose to use the IMDb dataset, which is presented in the above section. 
+*	Literature review:
+ *	In parallel to the research of new data, some group members were tasked with finding relevant information about networks theory and useful import in Python. In ADA’s course from last year, week 10 is dedicated to the study of networks, which was a lot of help. We also read the documentation from [NetworkX](https://networkx.org/). However, due to the large number of actors/directors and movies in our networks, it is possible that we will also use another Python library such as [igraph](https://igraph.org/) or [graph-tool](https://graph-tool.skewed.de/) which are more powerful.
+*	Pre-processing the data: 
+ *	As the additional dataset was chosen, it was now time to merge the two datasets in order to enrich our data. The processus behind the merging is explained in the data_preprocessing.ipynb notebook. In addition to that, the ethnicity from each actor was also found and added and scrapped from the web. Finally, we were able to create two pickle files which contain all the necessaries information. 
+*	Verify the feasibility:
+ *	As the data was pre-processed and usable, we verified the feasibility of our research questions and adjusted them in accordance with our data and perspective of the projects. The results and the visualization are available in the results.ipynb notebook.
 
+Part 2 : Networking
+*	Mapping the network: 
+ *	Using Python library such as NetworkX in order to make graph about the network of actors and directors. Potentially based them on different factors. Potentially sparse matrix may also be used in order to better visualize the network due to its large size. 
+*	Computing network’s metrics and doing network’s statistics:
+ *	Based on our research, multiple metrics related to networks will be computed such as: Degree distribution, community structure, average shortest path length, navigability, centrality measures (degree, closeness, betweenness, katz, PageRank),…
+ *	Based on those metrics, statistical computation may potentially be done in order to find factors that greatly influenced the evolution/form of the networks.
+
+Part 3 : Unsupervised learning and networks through time 
+*	Unsupervised learning: 
+ *	To answer our second research question, clustering method such as K-NN will be used to find cluster in our network and to define “type” of actors. 
+*	Networks through time:
+ *	 Previous mapping will be redone for each year to have an actual evolution of the networks through. As the computation may be time-consuming, this may only be done for actors who have interesting career. 
+*	Statistics:
+ *	The purpose will be to determine correlations between actors and different careers based on different statistical test (Chi2, t-test,…) on factors and then analyse them. 
+
+Part 4 : Analysing and reporting 
+*	Observation and analysis :
+ *	After part 3 is done and results and information have been obtained, analyses and conclusions will be made. 
+*	Plot and representation :
+ *	In order to showcase our results and to better analyse them, new graph and plot may be done based on our results and statistical findings. 
+*	Redaction :
+ *	Redaction of the report containing the observations/conclusions on Jekyll
 
 ## 5. Organization of the github repo : 
 
@@ -70,22 +73,11 @@ Different methods will be use in order to answer to our research questions :
 ```
 
 ## 6. Proposed timeline : 
-Week by week till the last Milestone : 
-* Week 8 : Pre-processing data, verify feasibility of research questions, literature review on network
-* Week 9 : merging dataset, verify feasibility of research questions, deliver milestone 2
-* Week 10 : Half of the team on homework, other literature review, start mapping
-* Week 11 : mapping the network, different versions, clustering
-* Week 12 : Statistical hypothesis and computation, clustering
-* Week 13 : Plot and redaction of Jekyll
-* Week 14 : Redaction of jekyll and final touch
+* Part 1 : week 8,9
+*	Part 2 : week 10,11
+*	Part 3 : week 12,13
+* Part 4 : week 13,14
 
 ## 7. Organization within the team 
-Faire un tableau ?
-* Pierre : literature review of networks 
-* Thibault : literature review of networks
-* Thomas : Pre-processing of data
-* Emile : 
-* Alexandre :
-* À faire : rédaction sur le site Jekill, homework 2 
+Each of the team member will be asigned with a specific research question and the other will have for duty to to check on the other and to give them neutral feedback. In addition to that, half of the team will directly begin working on the homework 2 so that is done by next the middle of next week. Finally, one or two person will have the responsability to write the report with Jekyll while the other finished the analysis. 
 
-## 8. Question TA (Optional) :
