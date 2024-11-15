@@ -6,12 +6,12 @@ The dataset that will be analyse during this project is the [CMU Movie Summary c
 ## 2. Research Questions : 
 Principal axes : 
 * Network through time
-  * What are the main factors characterizing the careers of the players and the evolution of the network?
+  * What are the main factors characterizing the careers of the players and the evolution of the network??
 * Factor determining clusters (ethnicity, genre, genre of movie)
 * Relation and network between actors and directors 
 
 ## 3. Proposed additional dataset : 
-[IMDb database](https://datasets.imdbws.com) : IMDb Non-Commercial Datasets. Huge database of information about film (millions of movies, series,...), directors,... [(readme.md of the database)](https://developer.imdb.com/non-commercial-datasets/)
+[IMDb database](https://datasets.imdbws.com) : Huge database of information about film (millions of movies, series,...), directors,... [(readme.md of the database)](https://developer.imdb.com/non-commercial-datasets/)
 * Name.basics.tsv.gz => unique index of the name and the according name
 * Title.basics.tsv.gz => unique index of film and other information about them
 * Title.crew.tsv.gz => unique index of film and unique index of directors and writers
