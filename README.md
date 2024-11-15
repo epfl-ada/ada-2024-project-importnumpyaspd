@@ -28,7 +28,7 @@ Principal axes :
 * **Network’s metrics and statistics** : Based on our research, multiple metrics related to networks will be computed such as: Degree distribution, community structure, average shortest path length, navigability, centrality measures (degree, closeness, betweenness, katz, PageRank). Based on those metrics, statistical computation may potentially be done in order to find factors that greatly influenced the evolution/form of the networks.
 
 ### Part 3 : Unsupervised learning and networks through time 
-* **Unsupervised learning** : To answer our second research question, clustering method such as K-NN will be used to find cluster in our network and to define “type” of actors.
+* **Unsupervised learning** : To answer our second research question, clustering method such as K-NN and Louvain's method will be used to find cluster in our network and to define “type” of actors.
 * **Networks through time** : Previous mapping will be redone for each year to have an actual evolution of the networks through. As the computation may be time-consuming, this may only be done for actors who have interesting career. 
 * **Statistics** : The purpose will be to determine correlations between actors and different careers based on different statistical test (Chi2, t-test,…) on factors and then analyse them. 
 
