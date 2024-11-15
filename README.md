@@ -8,6 +8,7 @@ Principal axes :
 * Network through time
   * What are the main factors characterizing the careers of the actors and the evolution of the networks?
 * Factor determining clusters (ethnicity, genre, genre of movie)
+  * What are the main characteristics of the actors behind the formation of clusters in film production collaboration networks?
 * Relation and network between actors and directors 
 
 ## 3. Additional datasets : 
