@@ -1,3 +1,7 @@
+import networkx as nx
+import pandas as pd
+from itertools import combinations
+
 def create_actor_network(Actors, min_movies=50):
     """
     Create the actor network for actors that played in at least min_movies movies. 
