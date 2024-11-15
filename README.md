@@ -9,15 +9,12 @@ Principal axes :
   * What are the main factors characterizing the careers of the actors and the evolution of the networks?
 * Factor determining clusters (ethnicity, genre, genre of movie)
   * What are the main characteristics of the actors behind the formation of clusters in film production collaboration networks?
-* Relation and network between actors and directors 
+* Network between actors and directors
+  * What is the link between successful actors and directors?
 
 ## 3. Additional datasets : 
-[IMDb database](https://datasets.imdbws.com) : Huge database of information about films (millions of movies, series,...), directors,... [(readme.md of the database)](https://developer.imdb.com/non-commercial-datasets/)
-* Name.basics.tsv.gz => unique index of the name and the according name
-* Title.basics.tsv.gz => unique index of film and other information about them
-* Title.crew.tsv.gz => unique index of film and unique index of directors and writers
-* Title.ratings.tsv.gz => unique index of film and ratings, number of votes
-* As the datasets are quite big (500mo to 1Go), they were not pushed to the repo in github. Specific information about the ratings and the profiles of the directors were taken from the database. The pre-processing is explained in data_preprocessing.ipynb.
+[IMDb database](https://datasets.imdbws.com) : Huge database of information about films (millions of movies, series,...), directors,... [(readme.md from IMDb)](https://developer.imdb.com/non-commercial-datasets/)
+* As the datasets are quite big (500mo to 1Go), they were not pushed to the repo in github. Specific information about the ratings and the profiles of the directors were taken from the database. The pre-processing is explained in data_preprocessing.ipynb. The readme.md of this dataset can be found in the data folder inside the IMDb folder.
 
 ## 4. Methods : 
 ### Part 1 : Beginning
@@ -46,12 +43,12 @@ Principal axes :
 ├── data                        <- Project data files
 │   ├── CMU                             <- Directory that contains all CMU "raw" datasets and a README that explains all features.
 │   ├── IMDb                            <- Directory that contains only a README that explains all features of every (IMDb) dataset that we have added to CMU.
-│   ├── data_preprocessing.ipynb        <- Notebook that reproduce all the preprocessing steps in order to get Actor.pkl and Movie.pkl (Merge CMU and IMDb)
 │   ├── Actor.pkl                       <- dataset that contains many features **per actor**
 │   ├── Movie.pkl                       <- dataset that contains many features **per movie**
 │
 ├── src                         <- Source code
 │   ├── data                            <- Data directory
+│   │     └── data_preprocessing.ipynb       <- Notebook that reproduce all the preprocessing steps in order to get Actor.pkl and Movie.pkl (Merge CMU and IMDb)
 │   ├── models                          <- Model directory
 │   ├── utils                           <- Utility directory
 │
