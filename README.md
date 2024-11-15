@@ -26,7 +26,7 @@ Principal axes :
 * **Verify feasibility** : As the data was pre-processed and usable, we verified the feasibility of our research questions and adjusted them in accordance with our data and perspective of the projects. The results and the visualization are available in the results.ipynb notebook.
 
 ### Part 2 : Networking
-* **Mapping the network**: Using Python library such as NetworkX in order to make graph about the network of actors and directors. Potentially based them on different factors. Potentially sparse matrix may also be used in order to better visualize the network due to its large size.
+* **Mapping the network**: Using Python library such as NetworkX in order to make graph about the network of actors and directors. Potentially sparse matrix may also be used in order to better visualize the network due to its large size.
 * **Network’s metrics and statistics** : Based on our research, multiple metrics related to networks will be computed such as: Degree distribution, community structure, average shortest path length, navigability, centrality measures (degree, closeness, betweenness, katz, PageRank). Based on those metrics, statistical computation may potentially be done in order to find factors that greatly influenced the evolution/form of the networks.
 
 ### Part 3 : Unsupervised learning and networks through time 
