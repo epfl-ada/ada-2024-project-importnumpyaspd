@@ -1,8 +1,9 @@
-This README describes data in the CMU Movie Summary Corpus, a collection of 42,306 movie plot summaries and metadata at both the movie level (including box office revenues, genre and date of release) and character level (including gender and estimated age).  This data supports work in the following paper:
+This README describes data in the IMDb folder. Data obtained from the website IMDb which reference almost all of the film made. Their dataset contains information about film, movie director, box office, ratings, crew members, origines and much more.
 
-David Bamman, Brendan O'Connor and Noah Smith, "Learning Latent Personas of Film Characters," in: Proceedings of the Annual Meeting of the Association for Computational Linguistics (ACL 2013), Sofia, Bulgaria, August 2013.
 
-All data is released under a Creative Commons Attribution-ShareAlike License. For questions or comments, please contact David Bamman (dbamman@cs.cmu.edu).
+Link of the datasets : https://datasets.imdbws.com
+
+Link of the explanation from IMDb : https://developer.imdb.com/non-commercial-datasets/
 
 ###
 #
@@ -10,70 +11,48 @@ All data is released under a Creative Commons Attribution-ShareAlike License. Fo
 #
 ###
 
-1. plot_summaries.txt.gz [29 M] 
 
-Plot summaries of 42,306 movies extracted from the November 2, 2012 dump of English-language Wikipedia.  Each line contains the Wikipedia movie ID (which indexes into movie.metadata.tsv) followed by the summary.
+1. title.basics.tsv.gz [ mo]
 
+Contains the following : 
 
-2. corenlp_plot_summaries.tar.gz [628 M, separate download]
-
-The plot summaries from above, run through the Stanford CoreNLP pipeline (tagging, parsing, NER and coref). Each filename begins with the Wikipedia movie ID (which indexes into movie.metadata.tsv).
-
-
-###
-#
-# METADATA
-#
-###
-
-3. movie.metadata.tsv.gz [3.4 M]
+- tconst (string) - alphanumeric unique identifier of the title
+- titleType (string) – the type/format of the title (e.g. movie, short, tvseries, tvepisode, video, etc)
+- primaryTitle (string) – the more popular title / the title used by the filmmakers on promotional materials at the point of release
+- originalTitle (string) - original title, in the original language
+- isAdult (boolean) - 0: non-adult title; 1: adult title
+- startYear (YYYY) – represents the release year of a title. In the case of TV Series, it is the series start year
+- endYear (YYYY) – TV Series end year. '\N' for all other title types
+- runtimeMinutes – primary runtime of the title, in minutes
+- genres (string array) – includes up to three genres associated with the title
 
 
-Metadata for 81,741 movies, extracted from the Noverber 4, 2012 dump of Freebase.  Tab-separated; columns:
+2. title.crew.tsv.gz [363.3 mo]
 
-1. Wikipedia movie ID
-2. Freebase movie ID
-3. Movie name
-4. Movie release date
-5. Movie box office revenue
-6. Movie runtime
-7. Movie languages (Freebase ID:name tuples)
-8. Movie countries (Freebase ID:name tuples)
-9. Movie genres (Freebase ID:name tuples)
+Contains the following :
+
+- tconst (string) - alphanumeric unique identifier of the title
+- directors (array of nconsts) - director(s) of the given title
+- writers (array of nconsts) – writer(s) of the given title
 
 
+3. title.ratings.tsv.gz [26 mo]
 
-4. character.metadata.tsv.gz [14 M]
+Contains the following :
 
-Metadata for 450,669 characters aligned to the movies above, extracted from the Noverber 4, 2012 dump of Freebase.  Tab-separated; columns:
-
-1. Wikipedia movie ID
-2. Freebase movie ID
-3. Movie release date
-4. Character name
-5. Actor date of birth
-6. Actor gender
-7. Actor height (in meters)
-8. Actor ethnicity (Freebase ID)
-9. Actor name
-10. Actor age at movie release
-11. Freebase character/actor map ID
-12. Freebase character ID
-13. Freebase actor ID
+- tconst (string) - alphanumeric unique identifier of the title
+- averageRating – weighted average of all the individual user ratings
+- numVotes - number of votes the title has received
 
 
-##
-#
-# TEST DATA
-#
-##
+4. name.basics.tsv.gz [ mo]
 
-tvtropes.clusters.txt
+Contains the following :
 
-72 character types drawn from tvtropes.com, along with 501 instances of those types.  The ID field indexes into the Freebase character/actor map ID in character.metadata.tsv.
-
-name.clusters.txt
-
-
-970 unique character names used in at least two different movies, along with 2,666 instances of those types.  The ID field indexes into the Freebase character/actor map ID in character.metadata.tsv.
+- nconst (string) - index unique of the name
+- primaryName (string) - name of the person
+- birthYear (YYYY) - year of birth
+- deathYear (YYYY) - year of death
+- primaryProfession (array of strings) - profession such as actor, producer, director, ....
+- knownForTitles (array of tconst) - film for which the person is known for
 
