@@ -44,7 +44,7 @@ Principal axes :
 ```
 ├── data                        <- Project data files
 │   ├── CMU                             <- Directory that contains all CMU "raw" datasets and a README that explains all features.
-│   ├── IMDb                            <- Directory that contains only a README that explains all features of every dataset that we have added to CMU.
+│   ├── IMDb                            <- Directory that contains only a README that explains all features of every (IMDb) dataset that we have added to CMU.
 │   ├── data_preprocessing.ipynb        <- Notebook that reproduce all the preprocessing steps in order to get Actor.pkl and Movie.pkl (Merge CMU and IMDb)
 │   ├── Actor.pkl                       <- dataset that contains many features **per actor**
 │   ├── Movie.pkl                       <- dataset that contains many features **per movie**
