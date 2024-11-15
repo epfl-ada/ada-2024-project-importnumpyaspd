@@ -13,3 +13,7 @@ urllib3
 astor
 re
 python-louvain
+community
+networkx
+python-louvain
+seaborn
