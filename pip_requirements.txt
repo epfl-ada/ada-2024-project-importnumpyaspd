@@ -11,3 +11,5 @@ beautifulsoup4
 tqdm
 urllib3
 astor
+re
+python-louvain
