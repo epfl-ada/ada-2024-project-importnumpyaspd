@@ -58,6 +58,19 @@ def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0):
 
 
 def create_director_network(Directors, min_movies=50):
+    """
+    Create the director network for actors that made at least `min_movies` movies. 
+    Each node is a director with name attributes.
+    The weight of the edges corresponds to the number of movie they made together.
+
+    Parameters:
+    Directors (pd.DataFrame): A dataframe containing all the information of the directors.
+    min_movies (int): A threshold to use to keep the director that made at least `min_movies`.
+
+    Returns:
+    NetworkX Graph: A graph representing the connections between Directors.
+    """
+    
     # Calculate the number of films for each director
     Directors["Number_of_films"] = Directors["age_at_movie_release"].apply(len)
     
@@ -89,6 +102,19 @@ def create_director_network(Directors, min_movies=50):
 
 
 def create_actor_director_network(Actors, Movie, min_movies=50):
+    """
+    Create the actor network for actors that played under the same director. 
+    Each node is an actor with name, gender, ethnicity, and height as attributes.
+    The weight of the edges corresponds to the number of times they played under the same director.
+
+    Parameters:
+    Actors (pd.DataFrame): A dataframe containing all the information of the actors.
+    Movie (pd.DataFrame): A dataframe containing all the information of the movies.
+    min_movies (int): A threshold to use the actors that played in at least `min_movies`.
+
+    Returns:
+    NetworkX Graph: A graph representing the connections between actors.
+    """
     # Calculate the number of films for each actor
     Actors["Number_of_films"] = Actors["actor_age_atmovierelease"].apply(len)
     
