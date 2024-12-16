@@ -4,7 +4,7 @@ from itertools import combinations
 from tqdm import tqdm
 import numpy as np
 
-def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0):
+def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0, add_attributes = False):
     """
     Create the actor network for actors that played in at least `min_movies` movies. 
     Each node is an actor with name, gender, ethnicity, and height as attributes.
@@ -15,13 +15,14 @@ def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0):
     Movie (pd.DataFrame): A dataframe containing all the information of the movies.
     min_movies (int): A threshold to use the actors that played in at least `min_movies`.
     min_releasedate (int): The minimum release date to consider for filtering movies.
+    add_attributes (boleean): A boleean value to choose to add information about the actors on each nodes or not.
 
     Returns:
     NetworkX Graph: A graph representing the connections between actors.
     """
     
     # Filter actors who have played in at least `min_movies` films
-    actors_with_min_x_movies = Actors[Actors['actor_age_atmovierelease'].apply(len) > min_movies]
+    actors_with_min_x_movies = Actors[Actors['actor_age_atmovierelease'].apply(len) >= min_movies]
     
     # Explode the actor's movie list into separate rows and filter by movie release date
     actors_df = actors_with_min_x_movies.explode('Freebase_movie_ID')
@@ -32,7 +33,7 @@ def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0):
     G = nx.Graph()
 
     for movie_id, group in tqdm(actors_df.groupby('Freebase_movie_ID'), desc="Creating network"):
-        if movie_releasedates.get(movie_id, 0) >= min_releasedate:  # Filter by movie release date
+        if movie_releasedates.get(movie_id, 3000) <= min_releasedate:  # Filter by movie release date
             actor_ids = group['Freebase_actor_ID'].tolist()
             
             for actor1, actor2 in combinations(actor_ids, 2):
@@ -44,15 +45,16 @@ def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0):
 
         
     # Add attributes to each actor node
-    for _, row in tqdm(actors_df.iterrows(), desc="Adding attributes"):
-        actor_id = row['Freebase_actor_ID']
-        if actor_id in G:
-            G.nodes[actor_id].update({
-                'name': row['actor_name'],
-                'gender': row.get('actor_gender', None),
-                'ethnicity': row.get('ethnicity', None),
-                'height': row.get('actor_height', None)
-            })
+    if add_attributes == True:
+        for _, row in tqdm(actors_df.iterrows(), desc="Adding attributes"):
+            actor_id = row['Freebase_actor_ID']
+            if actor_id in G:
+                G.nodes[actor_id].update({
+                    'name': row['actor_name'],
+                    'gender': row.get('actor_gender', None),
+                    'ethnicity': row.get('ethnicity', None),
+                    'height': row.get('actor_height', None)
+                })
     
     return G
 
