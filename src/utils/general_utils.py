@@ -4,7 +4,7 @@ from itertools import combinations
 from tqdm import tqdm
 import numpy as np
 
-def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0, add_attributes = False):
+def create_actor_network(Actors, min_movies=50, max_releasedate=0, add_attributes = False):
     """
     Create the actor network for actors that played in at least `min_movies` movies. 
     Each node is an actor with name, gender, ethnicity, and height as attributes.
@@ -12,7 +12,6 @@ def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0, add_at
 
     Parameters:
     Actors (pd.DataFrame): A dataframe containing all the information of the actors.
-    Movie (pd.DataFrame): A dataframe containing all the information of the movies.
     min_movies (int): A threshold to use the actors that played in at least `min_movies`.
     min_releasedate (int): The minimum release date to consider for filtering movies.
     add_attributes (boleean): A boleean value to choose to add information about the actors on each nodes or not.
@@ -32,8 +31,8 @@ def create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0, add_at
 
     G = nx.Graph()
 
-    for movie_id, group in tqdm(actors_df.groupby('Freebase_movie_ID'), desc="Creating network"):
-        if movie_releasedates.get(movie_id, 3000) <= min_releasedate:  # Filter by movie release date
+    for movie_id, group in actors_df.groupby('Freebase_movie_ID'):
+        if movie_releasedates.get(movie_id, 3000) <= max_releasedate:  # Filter by movie release date
             actor_ids = group['Freebase_actor_ID'].tolist()
             
             for actor1, actor2 in combinations(actor_ids, 2):
