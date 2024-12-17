@@ -5,147 +5,164 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
+def get_most_represented_language(Movie, number_language):
+    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
+    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
+    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.split(',')
+    Movie_copy = Movie_copy.explode('Movie_languages')
+
+    Movie_wo_nan_language = Movie_copy[Movie_copy["Movie_languages"] != ""]
+    language_to_keep = Movie_wo_nan_language["Movie_languages"].value_counts().head(number_language).index
+
+    return language_to_keep
 
 def create_actor_language_dataset(Movie, Actor, number_language):
+    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
+    Actor_copy = Actor.copy()  # Créer une copie du dataset Actor pour éviter la modification du original
 
-    #Movie['Movie_languages'] = Movie['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
+    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
+    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.split(',')
+    Movie_copy = Movie_copy.explode('Movie_languages')
 
-    # Convertir la colonne en liste si elle contient des langues séparées par des virgules
-    #Movie['Movie_languages'] = Movie['Movie_languages'].str.split(',')
-    #Movie = Movie.explode('Movie_languages')
-    
-    # Supprimer les films sans langue
-    Movie_wo_nan_language = Movie[Movie["Movie_languages"] != ""]
-    print(f"We lose {(Movie.shape[0] - Movie_wo_nan_language.shape[0]) / Movie.shape[0] * 100:.2f}% of the dataset of movies with this operation.")
+    Movie_wo_nan_language = Movie_copy[Movie_copy["Movie_languages"] != ""]
+    print(f"We lose {(Movie_copy.shape[0] - Movie_wo_nan_language.shape[0]) / Movie_copy.shape[0] * 100:.2f}% of the dataset of movies with this operation.")
 
-    # Sélectionner les principales langues
     language_to_keep = Movie_wo_nan_language["Movie_languages"].value_counts().head(number_language).index
-    Movie_selected_languages = Movie[Movie.Movie_languages.isin(language_to_keep)]
+    Movie_selected_languages = Movie_copy[Movie_copy.Movie_languages.isin(language_to_keep)]
 
-    # Créer un dictionnaire Actor -> Movies
-    Actor_movie = Actor["Freebase_movie_ID"]
-    Actor_movie.index = Actor.Freebase_actor_ID
+    Actor_movie = Actor_copy["Freebase_movie_ID"]
+    Actor_movie.index = Actor_copy.Freebase_actor_ID
     dict_Actor_movie = Actor_movie.to_dict()
 
-    # Inverser ce dictionnaire: Movie -> Actor
     dict_movie_actor = {}
     for key, values in dict_Actor_movie.items():
         for value in values:
             if value not in dict_movie_actor:
                 dict_movie_actor[value] = []
             dict_movie_actor[value].append(key)
-    
-    # Ajouter la colonne 'list_actor' dans le DataFrame Movie
-    Movie = Movie.reset_index()
-    Movie["list_actor"] = Movie["Freebase_movie_ID"].map(dict_movie_actor)
 
-    # Supprimer les films sans acteurs
-    Movie = Movie[~Movie.list_actor.isna()]
+    Movie_copy = Movie_copy.reset_index()
+    Movie_copy["list_actor"] = Movie_copy["Freebase_movie_ID"].map(dict_movie_actor)
 
-    # Créer un dictionnaire pour chaque langue contenant les films correspondants
+    Movie_copy = Movie_copy[~Movie_copy.list_actor.isna()]
+
     movie_dict = {}
     for language in language_to_keep:
-        movie_dict[language] = Movie[Movie.Movie_languages == language]
-    
-    # Créer un dictionnaire pour stocker les acteurs par langue (1 si présent, 0 sinon)
+        movie_dict[language] = Movie_copy[Movie_copy.Movie_languages == language]
+
     actor_per_language = {language: {} for language in language_to_keep}
 
-    # Vérifier la présence des acteurs dans chaque langue
     for language in language_to_keep:
         df = movie_dict[language]
-        
-        # Pour chaque film, lister les acteurs et marquer leur présence dans cette langue
+
         for index, row in df.iterrows():
-            actor_list = row["list_actor"]  # Liste des acteurs pour ce film
+            actor_list = row["list_actor"]
             for actor in actor_list:
                 if actor in actor_per_language[language]:
-                    actor_per_language[language][actor] += 1  # Ajouter 1 si l'acteur a déjà été vu
+                    actor_per_language[language][actor] += 1
                 else:
-                    actor_per_language[language][actor] = 1  # Initialiser le compteur à 1
+                    actor_per_language[language][actor] = 1
 
-    # Fusionner tous les dictionnaires dans un seul DataFrame
     actor_lists = []
     for language in language_to_keep:
-        # Transformer chaque dictionnaire en DataFrame (colonne d'acteurs par langue)
         actor_df = pd.DataFrame.from_dict(actor_per_language[language], orient='index', columns=[language])
         actor_lists.append(actor_df)
 
-    # Concaténer tous les DataFrames (les acteurs qui n'apparaissent pas dans une langue auront NaN)
     total = pd.concat(actor_lists, axis=1, join='outer').fillna(0)
     total.columns = language_to_keep
-    # Retourner le dictionnaire des acteurs par langue (présence = 1)
-    
+
     return total
 
 def create_cross_language(df):
+    df_copy = df.copy()  # Créer une copie du dataframe
     result = {}
-
-    n_language = df.shape[1]
+    n_language = df_copy.shape[1]
 
     for index in range(n_language):
-        # Créer une copie du DataFrame pour y ajouter les résultats
-        newdf = df.copy()
+        newdf = df_copy.copy()
 
-        # Filtrer la colonne pour garder uniquement les éléments non-nuls (différents de 0)
-        filtered_column = df.iloc[:, index][df.iloc[:, index] != 0]
-
-        # Appliquer le filtre pour ne garder que les lignes où l'acteur a joué dans un film de la langue en question
+        filtered_column = df_copy.iloc[:, index][df_copy.iloc[:, index] != 0]
         newdf = newdf.loc[filtered_column.index, :]
-
         newdf[newdf>0] = 1
-        # Transposer le DataFrame pour aligner les résultats avec chaque langue en colonnes
         newdf = newdf.T
-
-        # Calculer le nombre d'acteurs ayant joué dans un film de chaque langue en comptant les "1" dans chaque colonne
-        # La somme des "1" pour chaque ligne donne le nombre total d'acteurs ayant joué dans la langue
         newdf["sum"] = newdf.sum(axis=1)
 
-        # Ajouter le DataFrame traité dans le dictionnaire des résultats
-        result[df.columns[index]] = newdf
+        result[df_copy.columns[index]] = newdf
 
     return result
     
 def create_cross_language_count(df):
+    df_copy = df.copy()  # Créer une copie du dataframe
     result = {}
-    
-    n_language = df.shape[1]
-    
-    for index in range(n_language):
-        # Créer une copie du DataFrame pour y ajouter les résultats
-        newdf = df.copy()
-        
-        # Filtrer la colonne pour garder uniquement les éléments non-nuls (différents de 0)
-        filtered_column = df.iloc[:, index][df.iloc[:, index] != 0]
-        
-        newdf = newdf.loc[filtered_column.index, :]
 
+    n_language = df_copy.shape[1]
+    for index in range(n_language):
+        newdf = df_copy.copy()
+
+        filtered_column = df_copy.iloc[:, index][df_copy.iloc[:, index] != 0]
+        newdf = newdf.loc[filtered_column.index, :]
         newdf["nb_movie"] = newdf.sum(axis=1)
 
-        # Ajouter le DataFrame traité dans le dictionnaire des résultats
-        result[df.columns[index]] = newdf
+        result[df_copy.columns[index]] = newdf
 
     return result
-    
+
 def plot_language_histograms(result):
-    # Parcourir chaque langue et ses résultats dans le dictionnaire
     for key, value in result.items():
-        # Extraire les données que vous voulez afficher (les sommes pour chaque langue)
         data = value
         
-        # Plot
         plt.figure(figsize=(10, 6))
-        
-        # Créer un histogramme des valeurs de sum
         plt.bar(data.index, data['sum'])
-        
-        # Ajouter un titre et des labels
         plt.title(f"Histogramme des films pour {key}")
         plt.xlabel("Langues")
         plt.ylabel("Nombre de films")
-        
-        # Appliquer une échelle logarithmique à l'axe des ordonnées
         plt.yscale('log')
-        
-        # Afficher le graphique
-        plt.xticks(rotation=45)  # Faire pivoter les labels des axes x pour mieux les afficher
+        plt.xticks(rotation=45)
         plt.show()
+
+def custom_create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0, add_attributes=False):
+    Actors_copy = Actors.copy()  # Créer une copie du dataset Actors
+    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie
+
+    actors_with_min_x_movies = Actors_copy[Actors_copy['actor_age_atmovierelease'].apply(len) >= min_movies]
+    actors_df = actors_with_min_x_movies.explode('Freebase_movie_ID')
+    movie_releasedates = Movie_copy.set_index('Freebase_movie_ID')['release_date'].to_dict()
+
+    G = nx.Graph()
+
+    for movie_id, group in tqdm(actors_df.groupby('Freebase_movie_ID'), desc="Creating network"):
+        if movie_releasedates.get(movie_id, 3000) <= min_releasedate:
+            actor_ids = group['Freebase_actor_ID'].tolist()
+            
+            for actor1, actor2 in combinations(actor_ids, 2):
+                if actor1 != actor2:
+                    if G.has_edge(actor1, actor2):
+                        G[actor1][actor2]['weight'] += 1
+                    else:
+                        movie_language = Movie_copy.loc[Movie_copy['Freebase_movie_ID'] == movie_id, 'Movie_languages']
+                        if not movie_language.empty:
+                            movie_language = movie_language.iloc[0]
+                            # Si movie_language est une liste, on peut simplement utiliser le premier élément
+                            if isinstance(movie_language, list):
+                                movie_language = movie_language[0].strip()  # On prend la première langue
+                            else:
+                                # Si ce n'est pas une liste, appliquer split
+                                movie_language = movie_language.split(',')[0].strip()
+                        else:
+                            movie_language = "Unknown"
+                        if movie_language == "":
+                            movie_language = "Unknown"
+                        G.add_edge(actor1, actor2, weight=1, langue=movie_language)
+
+    if add_attributes:
+        for _, row in tqdm(actors_df.iterrows(), desc="Adding attributes"):
+            actor_id = row['Freebase_actor_ID']
+            if actor_id in G:
+                G.nodes[actor_id].update({
+                    'name': row['actor_name'],
+                    'gender': row.get('actor_gender', None),
+                    'ethnicity': row.get('ethnicity', None),
+                    'height': row.get('actor_height', None)
+                })
+    
+    return G
