@@ -1,11 +1,17 @@
+import networkx as nx
+import pandas as pd
+from itertools import combinations
+from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 ################################################################################################################################
 def create_actor_language_dataset(Movie, Actor, number_language):
 
-    Movie['Movie_languages'] = Movie['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
+    #Movie['Movie_languages'] = Movie['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
 
     # Convertir la colonne en liste si elle contient des langues séparées par des virgules
-    Movie['Movie_languages'] = Movie['Movie_languages'].str.split(',')
-    Movie = Movie.explode('Movie_languages')
+    #Movie['Movie_languages'] = Movie['Movie_languages'].str.split(',')
+    #Movie = Movie.explode('Movie_languages')
     
     # Supprimer les films sans langue
     Movie_wo_nan_language = Movie[Movie["Movie_languages"] != ""]
@@ -51,7 +57,10 @@ def create_actor_language_dataset(Movie, Actor, number_language):
         for index, row in df.iterrows():
             actor_list = row["list_actor"]  # Liste des acteurs pour ce film
             for actor in actor_list:
-                actor_per_language[language][actor] = 1  # Marquer 1 si l'acteur est présent
+                if actor in actor_per_language[language]:
+                    actor_per_language[language][actor] += 1  # Ajouter 1 si l'acteur a déjà été vu
+                else:
+                    actor_per_language[language][actor] = 1  # Initialiser le compteur à 1
 
     # Fusionner tous les dictionnaires dans un seul DataFrame
     actor_lists = []
@@ -61,16 +70,43 @@ def create_actor_language_dataset(Movie, Actor, number_language):
         actor_lists.append(actor_df)
 
     # Concaténer tous les DataFrames (les acteurs qui n'apparaissent pas dans une langue auront NaN)
-    total = pd.concat(actor_lists, axis=1, join='outer')
+    total = pd.concat(actor_lists, axis=1, join='outer').fillna(0)
     total.columns = language_to_keep
     # Retourner le dictionnaire des acteurs par langue (présence = 1)
-
-    total = total.applymap(lambda x: 1 if pd.notna(x) else 0)
     
     return total
 
 def create_cross_language(df):
     result = {}
+
+    n_language = df.shape[1]
+
+    for index in range(n_language):
+        # Créer une copie du DataFrame pour y ajouter les résultats
+        newdf = df.copy()
+
+        # Filtrer la colonne pour garder uniquement les éléments non-nuls (différents de 0)
+        filtered_column = df.iloc[:, index][df.iloc[:, index] != 0]
+
+        # Appliquer le filtre pour ne garder que les lignes où l'acteur a joué dans un film de la langue en question
+        newdf = newdf.loc[filtered_column.index, :]
+
+        newdf[newdf>0] = 1
+        # Transposer le DataFrame pour aligner les résultats avec chaque langue en colonnes
+        newdf = newdf.T
+
+        # Calculer le nombre d'acteurs ayant joué dans un film de chaque langue en comptant les "1" dans chaque colonne
+        # La somme des "1" pour chaque ligne donne le nombre total d'acteurs ayant joué dans la langue
+        newdf["sum"] = newdf.sum(axis=1)
+
+        # Ajouter le DataFrame traité dans le dictionnaire des résultats
+        result[df.columns[index]] = newdf
+
+    return result
+    
+def create_cross_language_count(df):
+    result = {}
+    
     n_language = df.shape[1]
     
     for index in range(n_language):
@@ -80,20 +116,9 @@ def create_cross_language(df):
         # Filtrer la colonne pour garder uniquement les éléments non-nuls (différents de 0)
         filtered_column = df.iloc[:, index][df.iloc[:, index] != 0]
         
-        # Pour chaque langue, ajouter les données relatives à l'acteur et film
-        for j in df.columns:
-            if j != df.columns[index]:
-                # Remplir newdf[j] en marquant '1' quand un acteur a joué dans un film de la langue courante
-                newdf[j] = (df[df.columns[index]] + df[j] > 1).astype(int) # Si acteur dans cette langue et film, on met 1
-         
-        # Appliquer le filtre pour ne garder que les lignes où l'acteur a joué dans un film de la langue en question
         newdf = newdf.loc[filtered_column.index, :]
 
-        # Transposer le DataFrame pour aligner les résultats avec chaque langue en colonnes
-        newdf = newdf.T
-        
-        # Ajouter une colonne de somme, indiquant combien de films un acteur a dans chaque langue
-        newdf["sum"] = newdf.sum(axis=1)
+        newdf["nb_movie"] = newdf.sum(axis=1)
 
         # Ajouter le DataFrame traité dans le dictionnaire des résultats
         result[df.columns[index]] = newdf
