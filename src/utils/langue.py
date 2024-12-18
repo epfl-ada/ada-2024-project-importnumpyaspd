@@ -9,41 +9,53 @@ import seaborn.objects as so
 import plotly.graph_objects as go
 import time
 import matplotlib.lines as mlines
+import matplotlib.colors as mcolors
 
 
 def explode_movie_dataset(Movie):
-    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
+    """
+    Explodes the 'Movie_languages' column of the dataset into multiple rows 
+    for each language, removing any empty or NaN values.
+    """
+    
+    Movie_copy = Movie.copy()
     Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
-    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.split(',')
-    Movie_copy = Movie_copy.explode('Movie_languages')
+    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.split(',')# split the 'Movie_languages' into a list
+    Movie_copy = Movie_copy.explode('Movie_languages') #explode dataset
 
-    Movie_wo_nan_language = Movie_copy[Movie_copy["Movie_languages"] != ""]
+    Movie_wo_nan_language = Movie_copy[Movie_copy["Movie_languages"] != ""]  # Remove rows with empty language
 
     return Movie_wo_nan_language
 
 def get_most_represented_language(Movie, number_language):
+    """
+    Gets the most represented languages in the dataset.
+    """
     
-    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
-    Movie_wo_nan_language = explode_movie_dataset(Movie_copy)
+    Movie_copy = Movie.copy()
+    Movie_wo_nan_language = explode_movie_dataset(Movie_copy) #explode dataset
 
+    #get most frequent languages
     language_to_keep = Movie_wo_nan_language["Movie_languages"].value_counts().head(number_language).index
 
     return language_to_keep
 
 def create_actor_language_dataset(Movie, Actor, number_language):
-    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
-    Actor_copy = Actor.copy()  # Créer une copie du dataset Actor pour éviter la modification du original
+    """
+    Creates a dataset of actor with languages movie they played in.
+    """
+    
+    Movie_copy = Movie.copy()
+    Actor_copy = Actor.copy()
 
-    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
-    Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.split(',')
-    Movie_copy = Movie_copy.explode('Movie_languages')
+    # explode
+    Movie_copy = explode_movie_dataset(Movie_copy)
 
-    Movie_wo_nan_language = Movie_copy[Movie_copy["Movie_languages"] != ""]
-    print(f"We lose {(Movie_copy.shape[0] - Movie_wo_nan_language.shape[0]) / Movie_copy.shape[0] * 100:.2f}% of the dataset of movies with this operation.")
-
-    language_to_keep = Movie_wo_nan_language["Movie_languages"].value_counts().head(number_language).index
+    # keep movie with most represetnative languages
+    language_to_keep = get_most_represented_language(Movie, number_language)
     Movie_selected_languages = Movie_copy[Movie_copy.Movie_languages.isin(language_to_keep)]
 
+    # dict to map actors to movies
     Actor_movie = Actor_copy["Freebase_movie_ID"]
     Actor_movie.index = Actor_copy.Freebase_actor_ID
     dict_Actor_movie = Actor_movie.to_dict()
@@ -55,9 +67,11 @@ def create_actor_language_dataset(Movie, Actor, number_language):
                 dict_movie_actor[value] = []
             dict_movie_actor[value].append(key)
 
+    # do the mapping
     Movie_copy = Movie_copy.reset_index()
     Movie_copy["list_actor"] = Movie_copy["Freebase_movie_ID"].map(dict_movie_actor)
 
+    #drop movies twithout associated actors
     Movie_copy = Movie_copy[~Movie_copy.list_actor.isna()]
 
     movie_dict = {}
@@ -66,9 +80,9 @@ def create_actor_language_dataset(Movie, Actor, number_language):
 
     actor_per_language = {language: {} for language in language_to_keep}
 
+    # Counter appearandce for actor in each language's movies
     for language in language_to_keep:
         df = movie_dict[language]
-
         for index, row in df.iterrows():
             actor_list = row["list_actor"]
             for actor in actor_list:
@@ -77,118 +91,159 @@ def create_actor_language_dataset(Movie, Actor, number_language):
                 else:
                     actor_per_language[language][actor] = 1
 
+    # Create a DataFrame for each language's actor counts and combine them into a single DataFrame
     actor_lists = []
     for language in language_to_keep:
         actor_df = pd.DataFrame.from_dict(actor_per_language[language], orient='index', columns=[language])
         actor_lists.append(actor_df)
 
+    # Concatenate actor counts for each language
     total = pd.concat(actor_lists, axis=1, join='outer').fillna(0)
     total.columns = language_to_keep
 
     return total
-
+    
 def create_cross_language(df):
-    df_copy = df.copy()  # Créer une copie du dataframe
-    result = {}
-    n_language = df_copy.shape[1]
+    """
+     creat a dict per languages kept. each value are df only with actor that have played in this specific language (key)
+    """
+    
+    df_copy = df.copy()
+    result = {}  # Init result dict
+    n_language = df_copy.shape[1]  #get nb languages
 
     for index in range(n_language):
         newdf = df_copy.copy()
-
+        
+        # filter column to have only when there is participation for the given language(indeex)
         filtered_column = df_copy.iloc[:, index][df_copy.iloc[:, index] != 0]
+        
+        # Keep only the rows that are in the filtered column
         newdf = newdf.loc[filtered_column.index, :]
-        newdf[newdf>0] = 1
+        
+        # Set all positive values to 1, indicating participation in that language
+        newdf[newdf > 0] = 1
+        
         newdf = newdf.T
+        
+        # Create a 'sum' column that counts the total participation across all languages for each actor
         newdf["sum"] = newdf.sum(axis=1)
-
+        
+        # add to dict result
         result[df_copy.columns[index]] = newdf
 
     return result
     
 def create_cross_language_count(df):
-    df_copy = df.copy()  # Créer une copie du dataframe
-    result = {}
+    """
+    create dict containing a dict with a key per movie language.
+    for each key : there is the actor that have played in this language with all other movie languages played in (with the count of movie per languages)
+    """
+    
+    df_copy = df.copy()
+    result = {} #init result dict
 
-    n_language = df_copy.shape[1]
+    n_language = df_copy.shape[1] #get nb coloumnm
+    
     for index in range(n_language):
         newdf = df_copy.copy()
-
+        
+        # Filter column with participation
         filtered_column = df_copy.iloc[:, index][df_copy.iloc[:, index] != 0]
+        
+        # Keep only rows for actors that are present in the filtered column
         newdf = newdf.loc[filtered_column.index, :]
+        
+        # Add a count of nb movie played in for each actor
         newdf["nb_movie"] = newdf.sum(axis=1)
-
+        
+        # add to dict
         result[df_copy.columns[index]] = newdf
 
     return result
 
-def custom_create_actor_network(Actors, Movie, min_movies=50, add_attributes=False):
+def custom_create_actor_network(Actors, Movie, min_movies=50):
+    """
+    creat network with connection : play together between actor
+    identify the language of moive in the edge of the network
+    """
+    
     start_time = time.time()
-    Actors_copy = Actors.copy()  # Créer une copie du dataset Actors
-    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie
-
+    
+    Actors_copy = Actors.copy()
+    Movie_copy = Movie.copy()
+    
+    # Filter actors who have acted in at least 'min_movies' movies
     actors_with_min_x_movies = Actors_copy[Actors_copy['actor_age_atmovierelease'].apply(len) >= min_movies]
+    
+    # Explode the list of movies to create a DataFrame where each row corresponds to a unique actor-movie pair
     actors_df = actors_with_min_x_movies.explode('Freebase_movie_ID')
+    
+    # Create a dictionary of movie release dates using movie IDs as keys
     movie_releasedates = Movie_copy.set_index('Freebase_movie_ID')['release_date'].to_dict()
 
+    # Initialize an empty undirected graph using NetworkX
     G = nx.Graph()
 
+    # Iterate over each movie and its actors
     for movie_id, group in tqdm(actors_df.groupby('Freebase_movie_ID'), desc="Creating network"):
-            actor_ids = group['Freebase_actor_ID'].tolist()
-            
-            for actor1, actor2 in combinations(actor_ids, 2):
-                if actor1 != actor2:
-                    if G.has_edge(actor1, actor2):
-                        G[actor1][actor2]['weight'] += 1
-                    else:
-                        movie_language = Movie_copy.loc[Movie_copy['Freebase_movie_ID'] == movie_id, 'Movie_languages']
-                        if not movie_language.empty:
-                            movie_language = movie_language.iloc[0]
-                            # Si movie_language est une liste, on peut simplement utiliser le premier élément
-                            if isinstance(movie_language, list):
-                                movie_language = movie_language[0].strip()  # On prend la première langue
-                            else:
-                                # Si ce n'est pas une liste, appliquer split
-                                movie_language = movie_language.split(',')[0].strip()
+        actor_ids = group['Freebase_actor_ID'].tolist()  # Get the list of actor IDs for this movie
+        
+        # Iterate over each pair of actors who acted in the same movie
+        for actor1, actor2 in combinations(actor_ids, 2):
+            if actor1 != actor2:
+                if G.has_edge(actor1, actor2):
+                    # If the edge exists, increment the weight by 1 (co-appearance)
+                    G[actor1][actor2]['weight'] += 1
+                else:
+                    # Determine the language of the movie
+                    movie_language = Movie_copy.loc[Movie_copy['Freebase_movie_ID'] == movie_id, 'Movie_languages']
+                    if not movie_language.empty:
+                        movie_language = movie_language.iloc[0]
+                        if isinstance(movie_language, list):
+                            movie_language = movie_language[0].strip()  # Take the first language if it's a list
                         else:
-                            movie_language = "Unknown"
-                        if movie_language == "":
-                            movie_language = "Unknown"
-                        G.add_edge(actor1, actor2, weight=1, langue=movie_language)
-
-    if add_attributes:
-        for _, row in tqdm(actors_df.iterrows(), desc="Adding attributes"):
-            actor_id = row['Freebase_actor_ID']
-            if actor_id in G:
-                G.nodes[actor_id].update({
-                    'name': row['actor_name'],
-                    'gender': row.get('actor_gender', None),
-                    'ethnicity': row.get('ethnicity', None),
-                    'height': row.get('actor_height', None)
-                })
+                            # If not a list, split by comma and take the first language (reason : can't represent both color, there is less than 10% woith many language, it won't really change the gloabl aspect pf the plot)
+                            movie_language = movie_language.split(',')[0].strip()
+                    else:
+                        movie_language = "Unknown"
+                    if movie_language == "":
+                        movie_language = "Unknown"
+                    
+                    # Add a new edge between the two actors with weight 1 and the movie language
+                    G.add_edge(actor1, actor2, weight=1, langue=movie_language)
+    
     end_time = time.time()
     print(f"time to compute: {end_time - start_time:.1f} seconds")
+    
     return G
 
 def create_distribution_for_each_group(dict_group, number_group):
-    nb_group = 4
+    """
+    create distribution of movie languages for different group.
+    """
+
     dict_total = {}
 
-    for g in range(1, nb_group + 1):
+    # Iterate through each group
+    for g in range(1, number_group + 1):
         group = dict_group[g]
-        total_movie = group.nb_movie.sum()
     
+        # Iterate on languages
         for i in group.columns:
             if i != "nb_movie":
-                ratio = float(group[i].sum())
-    
+                ratio = float(group[i].sum()) #compute ratio to show only %
                 if i in dict_total:
                     dict_total[i].append(ratio)
                 else:
                     dict_total[i] = [ratio]
-                    
+
     return dict_total
 
 def create_group(actor_count_movie_language):
+    """
+    create specific group describewd in notebook.
+    """
     dict_group = {}
     
     group1 = actor_count_movie_language[actor_count_movie_language["nb_movie"]<=5]
@@ -199,13 +254,14 @@ def create_group(actor_count_movie_language):
     dict_group[3] = group3
     group4 = actor_count_movie_language[actor_count_movie_language["nb_movie"]>25]
     dict_group[4] = group4
-    
+
+    #check that the nb of actor per group is not that small
     print(f"Size of groups : {group1.shape[0],group2.shape[0],group3.shape[0],group4.shape[0]}")
 
     return dict_group
 
 def print_result_chi2(chi2, p_value, dof, expected):
-    # Résultats
+    # show result of chi2 test
     print("Chi-2 :", chi2)
     print("P-value :", p_value)
     print("degree of freedom :", dof)
@@ -217,150 +273,154 @@ def print_result_chi2(chi2, p_value, dof, expected):
 
 def plot_language_histograms(result, save=False):
     """
-    Affiche des histogrammes interactifs pour chaque entrée de la variable `result` avec Plotly
-    et enregistre chaque graphique sous forme de fichier HTML.
-    
-    Paramètres :
-        result : dict
-            Dictionnaire contenant comme clés les catégories (ex: les films par langues),
-            et comme valeurs des DataFrames avec une colonne 'sum' représentant la quantité.
+    Plots interactive histograms for each entry in the result dictionary and saves them
     """
     for key, value in result.items():
-        data = value.copy()  # Créer une copie pour éviter les modifications
+        # Create a copy of the data to avoid modifying the original
+        data = value.copy()
+        
+        # Get the total number of actors that have played in this language
         total = float(data.loc[key]["sum"])
-        data["sum"] = data["sum"] / total  # Calcul des proportions
-
-        # Extraire la langue sans "Language" (ex: "English Language" -> "English")
-        language_name = key.split(" ")[0]  # Diviser la clé et prendre la première partie
-
-        # Création de l'histogramme interactif
+        
+        # Compute ratios for the plot for better visualization
+        data["sum"] = data["sum"] / total
+        
+        # Extract the language name for the tick labels
+        language_name = key.split(" ")[0]
+        
+        # Create a new figure
         fig = go.Figure()
 
+        # Prepare language labels without "Language" suffix
         languages = [lang.split(" ")[0] for lang in data.index]
 
+        # Add a bar trace with dynamic coloring based on proportions
         fig.add_trace(
             go.Bar(
-                x=languages,   # Noms des langues
-                y=data["sum"],  # Proportions
-                marker=dict(
-                    color=data["sum"], colorscale="Viridis", showscale=True  # Couleurs dynamiques
-                ),
-                name=language_name  # Utiliser seulement la langue
+                x=languages,
+                y=data["sum"],
+                marker=dict(color=data["sum"], colorscale="Viridis", showscale=True)
             )
         )
 
-        # Personnalisation du layout
+        # Customize the layout of the plot
         fig.update_layout(
-            title={
-                'text': f"Other languages for actor in {language_name} films",
-            },
+            title={'text': f"Other languages for actor in {language_name} films"},
             xaxis_title="Languages",
             yaxis_title="Actor [%]",
             xaxis=dict(
-                tickangle=0,  # Tick horizontal
+                tickangle=0,
                 tickfont=dict(size=12)
             ),
             yaxis=dict(
                 tickfont=dict(size=12),
-                tickformat=".0%"  # Format des pourcentages
+                tickformat=".0%"
             ),
             template="plotly_white",
             showlegend=False,
-            height=700,  # Ajuster la hauteur pour éviter l'effet écrasé
-            width=950   # Ajuster la largeur pour un ratio agréable
+            autosize=True,
+            width=None,
+            height=None,
         )
-
-        # Afficher la figure
+        
+        # Show the figure
         fig.show()
-
-        # Sauvegarder la figure si demandé
+        
+        # Save the figure as an HTML file if 'save' is True
         if save:
             filename = f"histogram_{language_name}.html"
             fig.write_html(filename)
-            print(f"Figure saved as {filename}") 
+            print(f"Figure saved as {filename}")
 
 def plot_group_distribution_language(df, nb_group, list_languages, save=False, file_name="group_distribution_plot.html"):
-    """
-    Crée un graphique de comparaison des distributions de valeurs par groupes et langues.
-    
-    Paramètres :
-    - df : DataFrame (matrice contenant les données des groupes)
-    - nb_group : int (nombre de groupes à comparer)
-    - list_languages : list (liste des langues)
-    - save : bool (détermine si le graphique doit être sauvegardé au format HTML)
-    - file_name : str (nom du fichier pour l'enregistrement, par défaut "group_distribution_plot.html")
-    
-    Retour :
-    - Affiche un graphique interactif Plotly et optionnellement enregistre le fichier en HTML
-    """
-    
-    # Matrice des données
+    # Create a copy of the data matrix and transpose it
     matrix = df.copy().T
     
-    # Créer une liste pour stocker les traces de chaque groupe
+    # Create a list to store the traces for each group
     traces = []
     
-    # Remplir dynamiquement les traces pour chaque groupe
+    # generate color to be good wiht veridis
+    viridis = plt.cm.viridis(np.linspace(0, 1, nb_group))
+    viridis_colors = [mcolors.rgb2hex(c) for c in viridis]
+    
     for i in range(nb_group):
-        # Calcul des proportions pour chaque groupe
-        group_values = matrix.iloc[i, :].values / np.sum(matrix.iloc[i, :].values)
+        group_values = matrix.iloc[i, :].values / np.sum(matrix.iloc[i, :].values)  # Compute proportions for each group
+        languages = [lang.split(" ")[0] for lang in list_languages]
         
-        # Ajouter une trace (un groupe) au graphique
         trace = go.Bar(
-            x=list_languages,
+            x=languages,
             y=group_values,
-            name=f'Group {i + 1}',  # Nom du groupe
-            hoverinfo='x+y+name',  # Information à afficher lors du survol de la souris
-            marker=dict(colorscale="Viridis")  # Ajout du coloriage par couleurscale
+            name=f'Group {i + 1}',  # Group name
+            hoverinfo='x+y+name',  # Hover info to show during the mouse-over
+            marker=dict(color=viridis_colors[i], showscale=False)  # Apply group color from the Viridis palette
         )
         traces.append(trace)
-    
-    # Création de la figure avec Plotly
+
     fig = go.Figure(data=traces)
-    
-    # Mettre à jour les titres et les axes
+
     fig.update_layout(
-        title='Distribution des langues pour chaque groupe',  # Reformulation du titre
-        xaxis_title='Langue',
+        title='Distribution of language per group',
+        xaxis_title='Language',
         yaxis_title='Proportion [%]',
-        barmode='group',  # Décalage des barres pour comparer les groupes côte à côte
-        height=700,
-        width=950,
-        template='plotly_white'  # Utilisation d'un thème léger
+        barmode='group',
+        template='plotly_white',
+        autosize=True,
+        width=None,
+        height=None,
     )
-    
-    # Si le paramètre 'save' est True, enregistrer le graphique au format HTML
+
     if save:
         fig.write_html(file_name)
-        print(f"Le graphique a été enregistré sous le nom : {file_name}")
     
-    # Afficher le graphique
+    # Show the plot
     fig.show()
 
-def plot_network_with_language(G):
-    langue_color_mapping = {
-    'English Language': '#440154',  # Viridis - Dark purple
-    'French Language': '#46327e',   # Viridis - Purple
-    'Hindi Language': '#365c8d',    # Viridis - Blue-purple
-    'Spanish Language': '#277f8e',  # Viridis - Teal
-    'Italian Language': '#1fa187',  # Viridis - Green-teal
-    'German Language': '#4ac16d',   # Viridis - Green
-    'Silent film': '#a0da39',       # Viridis - Yellow-green
-    'Japanese Language': '#fde725', # Viridis - Yellow
-    }
-    default_color = (0.5, 0.5, 0.5, 0.5)
-    edge_colors = [langue_color_mapping.get(G[u][v]["langue"], default_color) for u, v in G.edges]
+def plot_network_with_language(G, save=False):
     
-    legend_elements = [mlines.Line2D([], [], color=color, marker='o', markersize=10, linestyle='', label=langue) for langue, color in langue_color_mapping.items()]
-    legend_elements.append(mlines.Line2D([], [], color=default_color, marker='o', markersize=10, linestyle='', label='Unknown Language'))
+    # Generate viridis color
+    languages = ['English Language', 'French Language', 'Hindi Language', 'Spanish Language', 'Italian Language', 'German Language']
+    viridis = plt.cm.viridis(np.linspace(1, 0, len(languages)))
+    viridis_colors = [mcolors.rgb2hex(c) for c in viridis]
+
+    # map language to color
+    langue_color_mapping = {languages[i]: viridis_colors[i] for i in range(len(languages))}
+
+    # Default color for languages not in the mapping
+    default_color = (0.1, 0.1, 0.1, 0.1)  # Semi-transparent black for "Other Languages"
+    
+    # Assign edge colors based on the languages from the edge attributes
+    edge_colors = [langue_color_mapping.get(G[u][v]["langue"], default_color) for u, v in G.edges]
+
+    # Create a legend with the specified colors
+    legend_elements = [
+        mlines.Line2D([], [], color=color, marker='o', markersize=10, linestyle='', label=langue) 
+        for langue, color in langue_color_mapping.items()
+    ]
+    legend_elements.append(mlines.Line2D([], [], color=default_color, marker='o', markersize=10, linestyle='', label='Other Languages'))
+
     start_time = time.time()
+    
+    # Compute layout for the network (spring layout for positioning nodes)
     sp = nx.spring_layout(G, k=0.2, seed=42)
+    
     plt.figure(figsize=(15, 15))
-    nx.draw_networkx(G, pos=sp, with_labels=False, node_size=0.5, node_color="k", width=0.05)
+    
+    # Draw the network without labels, but including the edges colored based on language
+    nx.draw_networkx(G, pos=sp, with_labels=False, node_size=0.5, node_color="k", width=0.025)
     nx.draw_networkx_edges(G, pos=sp, width=0.5, edge_color=edge_colors, style='solid')
-    plt.legend(handles=legend_elements,loc="upper right", fontsize=10, title_fontsize=12) 
-    # plt.axes('off')
-    plt.title("Actor network clustered with louvain method", fontsize=15)
+
+    # Add the legend
+    plt.legend(handles=legend_elements, loc="upper right", fontsize=15, title_fontsize=12)
+
+    # Set plot title
+    plt.title("Network between actors: languages identification", fontsize=20)
+
+    # Save plot as an image if the save parameter is True
+    if save:
+        plt.savefig("network_with_languages.png", format="PNG", bbox_inches='tight', transparent=True)
+
+    # Show the plot
     plt.show()
+
     end_time = time.time()
     print(f"time to compute: {end_time - start_time:.1f} seconds")
