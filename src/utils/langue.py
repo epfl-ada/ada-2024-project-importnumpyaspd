@@ -6,14 +6,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import seaborn.objects as so
+import plotly.graph_objects as go
+import time
+import matplotlib.lines as mlines
 
-def get_most_represented_language(Movie, number_language):
+
+def explode_movie_dataset(Movie):
     Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
     Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.replace(r'\s*,\s*', ',', regex=True)
     Movie_copy['Movie_languages'] = Movie_copy['Movie_languages'].str.split(',')
     Movie_copy = Movie_copy.explode('Movie_languages')
 
     Movie_wo_nan_language = Movie_copy[Movie_copy["Movie_languages"] != ""]
+
+    return Movie_wo_nan_language
+
+def get_most_represented_language(Movie, number_language):
+    
+    Movie_copy = Movie.copy()  # Créer une copie du dataset Movie pour éviter la modification du original
+    Movie_wo_nan_language = explode_movie_dataset(Movie_copy)
+
     language_to_keep = Movie_wo_nan_language["Movie_languages"].value_counts().head(number_language).index
 
     return language_to_keep
@@ -109,37 +121,8 @@ def create_cross_language_count(df):
 
     return result
 
-def plot_language_histograms(result):
-    """
-    Affiche des histogrammes pour chaque entrée de la variable `result`.
-    Paramètres :
-        result : dict
-            Dictionnaire contenant comme clés les catégories (ex: les films par langues),
-            et comme valeurs des DataFrames avec une colonne 'sum' représentant la quantité.
-    """
-    # Configuration globale de Seaborn pour des plots jolis
-    sns.set_theme(style="whitegrid", palette="muted", font_scale=1.2)
-    for key, value in result.items():
-        data = value.copy()  # Créer une copie pour éviter les modifications
-        total = float(data.loc[key]["sum"])
-        data["sum"] = data["sum"]/total
-        # Créer le plot
-        plt.figure(figsize=(12, 7))  # Taille de la figure
-        sns.barplot(x=data.index, y='sum', data=data, palette='viridis', log=False)
-        
-        # Ajouter un titre et des étiquettes
-        plt.title(f"Other movies languages for actor that have been played in {key}", fontsize=16, fontweight='bold')
-        plt.xlabel("Languages", fontsize=14)
-        plt.ylabel("Actor [%]", fontsize=14)
-        
-        # Rotation des étiquettes de l'axe X
-        plt.xticks(rotation=45, ha='right') 
-        
-        # Afficher le plot proprement
-        plt.tight_layout()
-        plt.show()
-
-def custom_create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0, add_attributes=False):
+def custom_create_actor_network(Actors, Movie, min_movies=50, add_attributes=False):
+    start_time = time.time()
     Actors_copy = Actors.copy()  # Créer une copie du dataset Actors
     Movie_copy = Movie.copy()  # Créer une copie du dataset Movie
 
@@ -150,7 +133,6 @@ def custom_create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0,
     G = nx.Graph()
 
     for movie_id, group in tqdm(actors_df.groupby('Freebase_movie_ID'), desc="Creating network"):
-        if movie_releasedates.get(movie_id, 3000) <= min_releasedate:
             actor_ids = group['Freebase_actor_ID'].tolist()
             
             for actor1, actor2 in combinations(actor_ids, 2):
@@ -183,7 +165,8 @@ def custom_create_actor_network(Actors, Movie, min_movies=50, min_releasedate=0,
                     'ethnicity': row.get('ethnicity', None),
                     'height': row.get('actor_height', None)
                 })
-    
+    end_time = time.time()
+    print(f"time to compute: {end_time - start_time:.1f} seconds")
     return G
 
 def create_distribution_for_each_group(dict_group, number_group):
@@ -223,60 +206,161 @@ def create_group(actor_count_movie_language):
 
 def print_result_chi2(chi2, p_value, dof, expected):
     # Résultats
-    print("Statistique du Chi-2 :", chi2)
+    print("Chi-2 :", chi2)
     print("P-value :", p_value)
-    print("Degrés de liberté :", dof)
-    print("\n")
-    print("Tableau attendu théorique :\n", expected)
-    print("\n")
+    print("degree of freedom :", dof)
 
-    # Conclusion
     if p_value < 0.05:
-        print("Les distributions sont statistiquement différentes (p < 0.05).")
+        print("Distribution are significantly statistically different (p < 0.05).")
     else:
-        print("Aucune différence significative entre les distributions (p >= 0.05).")
+        print("No significance statistical differences (p >= 0.05).")
 
-def plot_group_distribution_language(df, nb_group, list_languages):
+def plot_language_histograms(result, save=False):
+    """
+    Affiche des histogrammes interactifs pour chaque entrée de la variable `result` avec Plotly
+    et enregistre chaque graphique sous forme de fichier HTML.
+    
+    Paramètres :
+        result : dict
+            Dictionnaire contenant comme clés les catégories (ex: les films par langues),
+            et comme valeurs des DataFrames avec une colonne 'sum' représentant la quantité.
+    """
+    for key, value in result.items():
+        data = value.copy()  # Créer une copie pour éviter les modifications
+        total = float(data.loc[key]["sum"])
+        data["sum"] = data["sum"] / total  # Calcul des proportions
+
+        # Extraire la langue sans "Language" (ex: "English Language" -> "English")
+        language_name = key.split(" ")[0]  # Diviser la clé et prendre la première partie
+
+        # Création de l'histogramme interactif
+        fig = go.Figure()
+
+        languages = [lang.split(" ")[0] for lang in data.index]
+
+        fig.add_trace(
+            go.Bar(
+                x=languages,   # Noms des langues
+                y=data["sum"],  # Proportions
+                marker=dict(
+                    color=data["sum"], colorscale="Viridis", showscale=True  # Couleurs dynamiques
+                ),
+                name=language_name  # Utiliser seulement la langue
+            )
+        )
+
+        # Personnalisation du layout
+        fig.update_layout(
+            title={
+                'text': f"Other languages for actor in {language_name} films",
+            },
+            xaxis_title="Languages",
+            yaxis_title="Actor [%]",
+            xaxis=dict(
+                tickangle=0,  # Tick horizontal
+                tickfont=dict(size=12)
+            ),
+            yaxis=dict(
+                tickfont=dict(size=12),
+                tickformat=".0%"  # Format des pourcentages
+            ),
+            template="plotly_white",
+            showlegend=False,
+            height=700,  # Ajuster la hauteur pour éviter l'effet écrasé
+            width=950   # Ajuster la largeur pour un ratio agréable
+        )
+
+        # Afficher la figure
+        fig.show()
+
+        # Sauvegarder la figure si demandé
+        if save:
+            filename = f"histogram_{language_name}.html"
+            fig.write_html(filename)
+            print(f"Figure saved as {filename}") 
+
+def plot_group_distribution_language(df, nb_group, list_languages, save=False, file_name="group_distribution_plot.html"):
     """
     Crée un graphique de comparaison des distributions de valeurs par groupes et langues.
-
+    
     Paramètres :
-    - matrix : DataFrame ou array (matrice contenant les données des groupes)
+    - df : DataFrame (matrice contenant les données des groupes)
     - nb_group : int (nombre de groupes à comparer)
     - list_languages : list (liste des langues)
-
+    - save : bool (détermine si le graphique doit être sauvegardé au format HTML)
+    - file_name : str (nom du fichier pour l'enregistrement, par défaut "group_distribution_plot.html")
+    
     Retour :
-    - Affiche un graphique Seaborn.
+    - Affiche un graphique interactif Plotly et optionnellement enregistre le fichier en HTML
     """
-
-    matrix = df.copy()
-    matrix = matrix.T
-    # Créer une liste pour stocker tous les DataFrames individuels
-    group_dfs = []
-
-    # Remplir dynamiquement les DataFrames pour chaque groupe
+    
+    # Matrice des données
+    matrix = df.copy().T
+    
+    # Créer une liste pour stocker les traces de chaque groupe
+    traces = []
+    
+    # Remplir dynamiquement les traces pour chaque groupe
     for i in range(nb_group):
-        group_df = pd.DataFrame({
-            'Language': list_languages,
-            'Value': matrix.iloc[i, :].values / np.sum(matrix.iloc[i, :].values),
-            'Type': f'group{i + 1}'
-        })
-        group_dfs.append(group_df)
-
-    # Combiner tous les groupes dans un seul DataFrame
-    combined_df = pd.concat(group_dfs, axis=0)
-
-    # Créer le plot avec seaborn.objects
-    p = (
-        so.Plot(combined_df, x="Language", y="Value", color="Type")  # Comparaison des groupes
-        .add(so.Bar(), so.Dodge())  # Décalage pour distinguer les groupes
-        .layout(size=(10, 6))  # Taille du graphique
-        .label(title="Comparaison des valeurs Observées et Attendues", 
-               x="Langue", 
-               y="Proportion")
+        # Calcul des proportions pour chaque groupe
+        group_values = matrix.iloc[i, :].values / np.sum(matrix.iloc[i, :].values)
+        
+        # Ajouter une trace (un groupe) au graphique
+        trace = go.Bar(
+            x=list_languages,
+            y=group_values,
+            name=f'Group {i + 1}',  # Nom du groupe
+            hoverinfo='x+y+name',  # Information à afficher lors du survol de la souris
+            marker=dict(colorscale="Viridis")  # Ajout du coloriage par couleurscale
+        )
+        traces.append(trace)
+    
+    # Création de la figure avec Plotly
+    fig = go.Figure(data=traces)
+    
+    # Mettre à jour les titres et les axes
+    fig.update_layout(
+        title='Distribution des langues pour chaque groupe',  # Reformulation du titre
+        xaxis_title='Langue',
+        yaxis_title='Proportion [%]',
+        barmode='group',  # Décalage des barres pour comparer les groupes côte à côte
+        height=700,
+        width=950,
+        template='plotly_white'  # Utilisation d'un thème léger
     )
-
+    
+    # Si le paramètre 'save' est True, enregistrer le graphique au format HTML
+    if save:
+        fig.write_html(file_name)
+        print(f"Le graphique a été enregistré sous le nom : {file_name}")
+    
     # Afficher le graphique
-    p.show()
+    fig.show()
+
+def plot_network_with_language(G):
+    langue_color_mapping = {
+    'English Language': '#440154',  # Viridis - Dark purple
+    'French Language': '#46327e',   # Viridis - Purple
+    'Hindi Language': '#365c8d',    # Viridis - Blue-purple
+    'Spanish Language': '#277f8e',  # Viridis - Teal
+    'Italian Language': '#1fa187',  # Viridis - Green-teal
+    'German Language': '#4ac16d',   # Viridis - Green
+    'Silent film': '#a0da39',       # Viridis - Yellow-green
+    'Japanese Language': '#fde725', # Viridis - Yellow
+    }
+    default_color = (0.5, 0.5, 0.5, 0.5)
+    edge_colors = [langue_color_mapping.get(G[u][v]["langue"], default_color) for u, v in G.edges]
     
-    
+    legend_elements = [mlines.Line2D([], [], color=color, marker='o', markersize=10, linestyle='', label=langue) for langue, color in langue_color_mapping.items()]
+    legend_elements.append(mlines.Line2D([], [], color=default_color, marker='o', markersize=10, linestyle='', label='Unknown Language'))
+    start_time = time.time()
+    sp = nx.spring_layout(G, k=0.2, seed=42)
+    plt.figure(figsize=(15, 15))
+    nx.draw_networkx(G, pos=sp, with_labels=False, node_size=0.5, node_color="k", width=0.05)
+    nx.draw_networkx_edges(G, pos=sp, width=0.5, edge_color=edge_colors, style='solid')
+    plt.legend(handles=legend_elements,loc="upper right", fontsize=10, title_fontsize=12) 
+    # plt.axes('off')
+    plt.title("Actor network clustered with louvain method", fontsize=15)
+    plt.show()
+    end_time = time.time()
+    print(f"time to compute: {end_time - start_time:.1f} seconds")
