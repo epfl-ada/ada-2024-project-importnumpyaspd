@@ -4,7 +4,7 @@ from itertools import combinations
 from tqdm import tqdm
 import numpy as np
 
-def create_actor_network(Actors, min_movies=50, max_releasedate=0, add_attributes = False):
+def create_actor_network(Actors, Movie, min_movies=50, max_releasedate=0, add_attributes = False):
     """
     Create the actor network for actors that played in at least `min_movies` movies. 
     Each node is an actor with name, gender, ethnicity, and height as attributes.
