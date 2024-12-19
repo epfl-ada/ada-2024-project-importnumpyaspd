@@ -342,10 +342,10 @@ def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1,
         loc='upper right',
     )
     
-    plt.show()
-
     if save:
         plt.savefig(f"{column_name}histo.png", dpi=300, bbox_inches="tight", transparent=True)
+        
+    plt.show()
 
 def get_dict_cluster(nb_clusters, df, label_column='Labels'):
     """
