@@ -131,7 +131,7 @@ def knn_clustering(Career_dataset_std, n_clusters, random_state=0):
     return labels
 
 
-def plot_career_data(Career_dataset, labels, actor_name=None, n_clusters=5, alpha=0.6):
+def plot_career_data(Career_dataset, labels, actor_name=None, n_clusters=5, alpha=0.6, save = False):
     """
     Plot the number of films through the career.
     If labels are provided, plot distinct curves for each cluster.
@@ -211,9 +211,16 @@ def plot_career_data(Career_dataset, labels, actor_name=None, n_clusters=5, alph
 
     # Show the plot
     fig.show()
+    
+    if save and actor_name!=None:
+        filename = f"career_{actor_name}.html"
+        fig.write_html(filename)
+    elif save and actor_name==None:
+        filename = f"career_with_{n_clusters}_cluster.html"
+        fig.write_html(filename)
 
 
-def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55):
+def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save = False):
     """
     Plot proportion of gender in clusters with custom colors from viridis palette and transparency
     """
@@ -272,7 +279,11 @@ def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55):
     # Show the combined plot
     fig.show()
     
-def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1, max_value=None, min_value=None, kde_option = False, logscale = False,Pourcentage = False, alpha = 0.3):
+    if save:
+        filename = f"gender_camembert_cluster.html"
+        fig.write_html(filename)
+    
+def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1, max_value=None, min_value=None, kde_option = False, logscale = False,Pourcentage = False, alpha = 0.3, save = False):
     """
     plot histogramm relatively to column "column name" parameter. Identify the distribution for each cluster (define in "Labels" columns) 
     """
@@ -331,6 +342,9 @@ def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1,
         loc='upper right',
     )
     
+    if save:
+        plt.savefig(f"{column_name}histo.png", dpi=300, bbox_inches="tight", transparent=True)
+        
     plt.show()
 
 def get_dict_cluster(nb_clusters, df, label_column='Labels'):
