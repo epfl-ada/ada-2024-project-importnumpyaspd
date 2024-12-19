@@ -351,7 +351,7 @@ def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1,
 
     # Save the plot
     if save:
-        fig.write_image(f"{column_name}_histo.html")
+        fig.write_html(f"{column_name}histo.html")
 
     fig.show()
 
