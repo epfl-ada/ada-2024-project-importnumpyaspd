@@ -343,7 +343,7 @@ def plot_language_histograms(result, save=False, alpha=0.6):
             filename = f"histogram{language_name}.html"
             fig.write_html(filename)
 
-def plot_group_distribution_language(df, nb_group, list_languages, save=False, file_name="group_distribution_plot.html"):
+def plot_group_distribution_language(df, nb_group, list_languages, save=False):
     # Create a copy of the data matrix and transpose it
     matrix = df.copy().T
     
@@ -397,8 +397,9 @@ def plot_group_distribution_language(df, nb_group, list_languages, save=False, f
 
     # Save the figure if requested
     if save:
+        file_name="group_distribution_plot.html"
         fig.write_html(file_name)
-    
+        
     # Show the plot
     fig.show()
 
