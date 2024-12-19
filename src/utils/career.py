@@ -220,9 +220,10 @@ def plot_career_data(Career_dataset, labels, actor_name=None, n_clusters=5, alph
         fig.write_html(filename)
 
 
-def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save = False):
+def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save=False):
     """
-    Plot proportion of gender in clusters with custom colors from viridis palette and transparency
+    Plot proportion of gender in clusters with custom colors from the viridis palette and transparency.
+    Display both percentages and raw counts on hover.
     """
     label_column = 'Labels'
     gender_column = 'actor_gender'
@@ -251,6 +252,7 @@ def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save =
         cluster_data = gender_proportions[gender_proportions[label_column] == cluster]
         labels = cluster_data[gender_column].values
         proportions = cluster_data['proportion'].values
+        counts = cluster_data['count'].values
 
         # Map gender labels to colors from viridis with transparency
         custom_colors = [colors[i % n_clusters] for i in range(len(labels))]  # Cycle through available colors
@@ -259,8 +261,14 @@ def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save =
             go.Pie(
                 labels=labels,
                 values=proportions,
-                hole=0.3,  
-                marker=dict(colors=custom_colors)
+                hole=0.3,
+                marker=dict(colors=custom_colors),
+                hovertemplate=(
+                    "<b>%{label}</b><br>"  # Gender label
+                    "Count: %{customdata[0]}<br>"  # Raw count
+                    "Percentage: %{percent:.2%}<extra></extra>"  # Percentage
+                ),
+                customdata=[(count,) for count in counts],  # Provide the count as custom data
             ),
             row=1,
             col=idx + 1
@@ -269,11 +277,10 @@ def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save =
     # Update layout
     fig.update_layout(
         autosize=True,
-        width=None,
-        height=None,
         title_text="Gender Proportions Across Clusters",
         title_x=0.5,
         showlegend=False,
+        template="plotly_white",
     )
     
     # Show the combined plot
@@ -283,69 +290,70 @@ def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save =
         filename = f"gender_camembert_cluster.html"
         fig.write_html(filename)
     
-def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1, max_value=None, min_value=None, kde_option = False, logscale = False,Pourcentage = False, alpha = 0.3, save = False):
+def plot_cluster_histogram(Actor_career, column_name, n_clusters=3, bin_width=1, 
+                                  max_value=None, min_value=None, kde_option=False, 
+                                  logscale=False, Pourcentage=False, alpha=0.3, save=False):
     """
-    plot histogramm relatively to column "column name" parameter. Identify the distribution for each cluster (define in "Labels" columns) 
+    Plot a histogram for the given column, grouped by clusters, using Plotly.
     """
-    # column containing label of cluster
-    labels_column='Labels'
+    labels_column = 'Labels'
     
-    # compute range (for axis)
+    # Compute range for the axis
     if min_value is None:
         min_value = Actor_career[column_name].min()
     if max_value is None:
         max_value = Actor_career[column_name].max()
     
-    # generate color to be good wiht veridis
+    # Generate Viridis colors with transparency
+    alpha = 0.6
     viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
-    colors = [mcolors.rgb2hex(c) for c in viridis]
     
-
-    plt.figure(figsize=(10, 6))
+    # Convert colors to rgba format (add alpha channel for transparency)
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, {alpha})'
+        for c in viridis
+    ]
     
-    # one color per cluster
+    # Create histogram data
+    fig = go.Figure()
+    bins = np.arange(min_value, max_value + bin_width, bin_width)
+    
     for i in range(n_clusters):
         cluster_data = Actor_career[Actor_career[labels_column] == i]
-        bins = np.arange(min_value, max_value + bin_width, bin_width)
-        if Pourcentage:
-            sns.histplot(
-            data=cluster_data, x=column_name, bins=bins, kde=kde_option,stat='percent',
-            alpha=alpha, color=colors[i], label=f'Cluster {i}')
-        else :
-            sns.histplot(
-            data=cluster_data, x=column_name, bins=bins, kde=kde_option,
-            alpha=alpha, color=colors[i], label=f'Cluster {i}')
-
-    # x,y limit for axis
-    plt.xlim(min_value, max_value)
-
-    if logscale : #log 
-        plt.yscale('log')
-    plt.title(f"Distribution of {column_name.replace('_', ' ').title()}", fontsize=16, fontweight='bold')
-    plt.xlabel(f"{column_name.replace('_', ' ').title()}", fontsize=14)
-    if Pourcentage:
-        plt.ylabel("Pourcentage", fontsize=14)
-    else :
-        plt.ylabel("Count", fontsize=14)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
-    plt.grid(visible=True, which='major', linestyle='--', linewidth=0.5, alpha=0.7)
-    
-    handles, labels = plt.gca().get_legend_handles_labels()
-    order = [i for i in range(n_clusters)]  # order cluster
-    plt.legend(
-        [handles[i] for i in order],
-        [labels[i] for i in order],
-        title="Clusters",
-        fontsize=12,
-        title_fontsize=14,
-        loc='upper right',
-    )
-    
-    if save:
-        plt.savefig(f"{column_name}histo.png", dpi=300, bbox_inches="tight", transparent=True)
+        hist_data = cluster_data[column_name]
         
-    plt.show()
+        if Pourcentage:
+            hist_stat = 'percent'
+        else:
+            hist_stat = 'count'
+        
+        fig.add_trace(
+            go.Histogram(
+                x=hist_data,
+                xbins=dict(start=min_value, end=max_value, size=bin_width),
+                name=f"Cluster {i}",
+                marker_color=colors[i],
+                opacity=alpha,
+                histnorm=hist_stat if Pourcentage else None
+            )
+        )
+
+    # Update layout
+    fig.update_layout(
+        title=f"Distribution of {column_name.replace('_', ' ').title()}",
+        xaxis_title=column_name.replace('_', ' ').title(),
+        yaxis_title="Percentage" if Pourcentage else "Count",
+        barmode='overlay',
+        legend=dict(title="Clusters"),
+        xaxis=dict(range=[min_value, max_value]),
+        yaxis=dict(type='log' if logscale else 'linear')
+    )
+
+    # Save the plot
+    if save:
+        fig.write_image(f"{column_name}_histo.html")
+
+    fig.show()
 
 def get_dict_cluster(nb_clusters, df, label_column='Labels'):
     """
