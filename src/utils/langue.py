@@ -271,35 +271,47 @@ def print_result_chi2(chi2, p_value, dof, expected):
     else:
         print("No significance statistical differences (p >= 0.05).")
 
-def plot_language_histograms(result, save=False):
+def plot_language_histograms(result, save=False, alpha=0.6):
     """
-    Plots interactive histograms for each entry in the result dictionary and saves them
+    Plots interactive histograms for each entry in the result dictionary and saves them.
     """
     for key, value in result.items():
         # Create a copy of the data to avoid modifying the original
         data = value.copy()
-        
+
         # Get the total number of actors that have played in this language
         total = float(data.loc[key]["sum"])
-        
+
         # Compute ratios for the plot for better visualization
         data["sum"] = data["sum"] / total
-        
+
         # Extract the language name for the tick labels
         language_name = key.split(" ")[0]
-        
+
         # Create a new figure
         fig = go.Figure()
 
         # Prepare language labels without "Language" suffix
         languages = [lang.split(" ")[0] for lang in data.index]
 
-        # Add a bar trace with dynamic coloring based on proportions
+        # Define colors via the Viridis color scale, and add transparency
+        viridis = plt.cm.viridis(np.linspace(0, 1, len(data)))
+
+        # Generate a list of colors with the alpha applied for rgba format
+        colors_with_alpha = [
+            f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, {alpha})'
+            for c in viridis
+        ]
+
+        # Add a bar trace with dynamic coloring based on proportions and transparent colors
         fig.add_trace(
             go.Bar(
                 x=languages,
                 y=data["sum"],
-                marker=dict(color=data["sum"], colorscale="Viridis", showscale=True)
+                marker=dict(
+                    color=colors_with_alpha,  # Use the colors with transparency
+                    showscale=False  # Disable the automatic colorbar
+                )
             )
         )
 
@@ -317,15 +329,15 @@ def plot_language_histograms(result, save=False):
                 tickformat=".0%"
             ),
             template="plotly_white",
-            showlegend=False,
+            showlegend=False,  # Remove legend if you don't need it
             autosize=True,
             width=None,
             height=None,
         )
-        
+
         # Show the figure
         fig.show()
-        
+
         # Save the figure as an HTML file if 'save' is True
         if save:
             filename = f"histogram_{language_name}.html"
@@ -339,36 +351,52 @@ def plot_group_distribution_language(df, nb_group, list_languages, save=False, f
     # Create a list to store the traces for each group
     traces = []
     
-    # generate color to be good wiht veridis
-    viridis = plt.cm.viridis(np.linspace(0, 1, nb_group))
-    viridis_colors = [mcolors.rgb2hex(c) for c in viridis]
+    # Generate Viridis colors with transparency
+    alpha = 0.6
+    viridis = plt.cm.viridis(np.linspace(0, 1, len(list_languages)))
     
+    # Convert colors to rgba format (add alpha channel for transparency)
+    viridis_colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, {alpha})'
+        for c in viridis
+    ]
+    
+    # Loop over each group and create a bar trace for each
     for i in range(nb_group):
         group_values = matrix.iloc[i, :].values / np.sum(matrix.iloc[i, :].values)  # Compute proportions for each group
         languages = [lang.split(" ")[0] for lang in list_languages]
         
+        # Create the trace for the bar chart
         trace = go.Bar(
             x=languages,
             y=group_values,
             name=f'Group {i + 1}',  # Group name
             hoverinfo='x+y+name',  # Hover info to show during the mouse-over
-            marker=dict(color=viridis_colors[i], showscale=False)  # Apply group color from the Viridis palette
+            marker=dict(
+                color=viridis_colors[i],  # Apply group color from the Viridis palette
+                showscale=False            # Hide the scale in this case
+            )
         )
+        
+        # Append the trace to the list of traces
         traces.append(trace)
 
+    # Create the figure
     fig = go.Figure(data=traces)
 
+    # Update the layout of the figure
     fig.update_layout(
         title='Distribution of language per group',
         xaxis_title='Language',
         yaxis_title='Proportion [%]',
-        barmode='group',
+        barmode='group',  # Group bars side by side
         template='plotly_white',
         autosize=True,
         width=None,
         height=None,
     )
 
+    # Save the figure if requested
     if save:
         fig.write_html(file_name)
     
@@ -379,9 +407,10 @@ def plot_network_with_language(G, save=False):
     
     # Generate viridis color
     languages = ['English Language', 'French Language', 'Hindi Language', 'Spanish Language', 'Italian Language', 'German Language']
-    viridis = plt.cm.viridis(np.linspace(1, 0, len(languages)))
-    viridis_colors = [mcolors.rgb2hex(c) for c in viridis]
-
+    alpha = 0.6
+    viridis = plt.cm.viridis(np.linspace(0, 1, len(languages)))
+    viridis_colors = [mcolors.rgb2hex(c[:3]) + hex(int(alpha * 255))[2:].zfill(2) for c in viridis]
+    
     # map language to color
     langue_color_mapping = {languages[i]: viridis_colors[i] for i in range(len(languages))}
 
@@ -396,7 +425,7 @@ def plot_network_with_language(G, save=False):
         mlines.Line2D([], [], color=color, marker='o', markersize=10, linestyle='', label=langue) 
         for langue, color in langue_color_mapping.items()
     ]
-    legend_elements.append(mlines.Line2D([], [], color=default_color, marker='o', markersize=10, linestyle='', label='Other Languages'))
+    legend_elements.append(mlines.Line2D([], [], color=default_color,  markersize=10, linestyle='-', label='Other Languages'))
 
     start_time = time.time()
     
