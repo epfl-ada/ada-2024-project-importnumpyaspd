@@ -226,7 +226,7 @@ def create_distribution_for_each_group(dict_group, number_group):
     dict_total = {}
 
     # Iterate through each group
-    for g in range(1, number_group + 1):
+    for g in range(0, number_group):
         group = dict_group[g]
     
         # Iterate on languages
@@ -257,6 +257,24 @@ def create_group(actor_count_movie_language):
 
     #check that the nb of actor per group is not that small
     print(f"Size of groups : {group1.shape[0],group2.shape[0],group3.shape[0],group4.shape[0]}")
+
+    return dict_group
+
+def create_group_success(actor_count_movie_language):
+    """
+    create specific group describewd in notebook.
+    """
+    dict_group = {}
+    
+    group1 = actor_count_movie_language[actor_count_movie_language["Labels"]==0]
+    dict_group[1] = group1
+    group2 = actor_count_movie_language[actor_count_movie_language["Labels"]==1]
+    dict_group[2] = group2
+    group3 = actor_count_movie_language[actor_count_movie_language["Labels"]==2]
+    dict_group[3] = group3
+
+    #check that the nb of actor per group is not that small
+    print(f"Size of groups : {group1.shape[0],group2.shape[0],group3.shape[0]}")
 
     return dict_group
 
@@ -343,7 +361,7 @@ def plot_language_histograms(result, save=False, alpha=0.6):
             filename = f"histogram{language_name}.html"
             fig.write_html(filename)
 
-def plot_group_distribution_language(df, nb_group, list_languages, save=False):
+def plot_group_distribution_language(df, nb_group, list_languages,  dict_actor_language,save=False):
     # Create a copy of the data matrix and transpose it
     matrix = df.copy().T
     
@@ -362,14 +380,14 @@ def plot_group_distribution_language(df, nb_group, list_languages, save=False):
     
     # Loop over each group and create a bar trace for each
     for i in range(nb_group):
-        group_values = matrix.iloc[i, :].values / np.sum(matrix.iloc[i, :].values)  # Compute proportions for each group
+        group_values = matrix.iloc[i, :].values / dict_actor_language[i].shape[0]  # Compute proportions for each group
         languages = [lang.split(" ")[0] for lang in list_languages]
         
         # Create the trace for the bar chart
         trace = go.Bar(
             x=languages,
             y=group_values,
-            name=f'Group {i + 1}',  # Group name
+            name=f'Group {i}',  # Group name
             hoverinfo='x+y+name',  # Hover info to show during the mouse-over
             marker=dict(
                 color=viridis_colors[i],  # Apply group color from the Viridis palette
