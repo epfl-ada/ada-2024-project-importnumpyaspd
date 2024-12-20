@@ -15,5 +15,9 @@ re
 python-louvain
 community
 networkx
-python-louvain
 seaborn
+pickle5
+time
+datetime
+plotly
+scikit-learn
