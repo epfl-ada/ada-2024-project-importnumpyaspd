@@ -368,8 +368,9 @@ def Plot_Camembert_Kmeans(Director_Success_Kmeans, save=False):
             xanchor="center",
             yanchor="top"
         ),
-        height=600,
-        width=600,
+        autosize=True,
+        width=None,
+        height=None,
         plot_bgcolor='white'  # White background for better clarity
     )
     
@@ -821,7 +822,10 @@ def Plot_Weight_Director(Director_Success_KNN, save=False):
             font=dict(size=10),
             x=1.05,
             y=1
-        )
+        ),
+        autosize=True,
+        width=None,
+        height=None
     )
     
     # Save the figure if needed
@@ -903,8 +907,9 @@ def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
         yaxis_type="log",
         barmode='overlay',
         showlegend=True,
-        height=600,
-        width=800,
+        autosize=True,
+        width=None,
+        height=None,
         legend=dict(
             title="Clusters",
             x=1.05,
@@ -992,8 +997,9 @@ def Plot_Number_of_Edges(Director_Success_KNN, save=False):
             y=1,
             font=dict(size=10)
         ),
-        height=600,
-        width=800
+                autosize=True,
+        width=None,
+        height=None
     )
 
     # Save the figure if needed
@@ -1075,8 +1081,9 @@ def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
             y=1,
             font=dict(size=10)
         ),
-        height=600,
-        width=900
+                autosize=True,
+        width=None,
+        height=None
     )
 
     # Save the figure if requested
@@ -1132,8 +1139,9 @@ def Plot_BOY_Director_Cluster(Director_Success_KNN, save=False):
             x=1.05,
             y=1
         ),
-        height=600,
-        width=900
+                autosize=True,
+        width=None,
+        height=None
     )
 
     # Save the figure if needed
@@ -1190,8 +1198,9 @@ def Plot_Career_Start_Director_Cluster(Director_Success_KNN, save=False):
             x=1.05,
             y=1
         ),
-        height=600,
-        width=900
+        autosize=True,
+        width=None,
+        height=None
     )
 
     # Save the figure if needed
@@ -1249,8 +1258,9 @@ def Plot_NOF_Director_Cluster(Director_Success_KNN, Max_movie=100, save=False):
             x=1.05,
             y=1
         ),
-        height=600,
-        width=900
+        autosize=True,
+        width=None,
+        height=None
     )
 
     # Save the figure if needed
@@ -1320,8 +1330,9 @@ def Plot_NOF_Vs_Sum_Weight(Director_Success_KNN, save=False):
             x=1.05,
             y=1
         ),
-        height=600,
-        width=900,
+        autosize=True,
+        width=None,
+        height=None,
         plot_bgcolor='white'
     )
 
@@ -1392,8 +1403,9 @@ def Plot_NOA_Vs_Sum_Weight_Director_Cluster(Director_Success_KNN, save=False):
             x=1.05,
             y=1
         ),
-        height=600,
-        width=900,
+        autosize=True,
+        width=None,
+        height=None,
         plot_bgcolor='white'
     )
 
@@ -1464,8 +1476,9 @@ def Plot_NOF_Vs_Career_Start(Director_Success_KNN, Max_movie=100, save=False):
             x=1.05,
             y=1
         ),
-        height=600,
-        width=900,
+        autosize=True,
+        width=None,
+        height=None,
         plot_bgcolor='white'
     )
 
