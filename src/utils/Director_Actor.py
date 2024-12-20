@@ -1,36 +1,19 @@
-import pickle 
 import numpy as np 
 import pandas as pd
 import networkx as nx
 from tqdm import tqdm
 import time
 import datetime
-import seaborn as sns
-import matplotlib.pyplot as plt
 from itertools import combinations
-import community
-import collections
-import scipy.stats
-import plotly.graph_objects as go
-import plotly.subplots as sp
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from collections import Counter 
 
-# j'ai enlevé les bails à propos des realease date car je n'en avais pas besoin
 def create_actor_network_V2(Actors, Movie, min_movies=50):
     """
-    Create the actor network for actors that played in at least `min_movies` movies. 
+    Create the actor network for actors that played in at least "min_movies" movies. 
     Each node is an actor with name, gender, ethnicity, and height as attributes.
     The weight of the edges corresponds to the number of times they played together.
-
-    Parameters:
-    Actors (pd.DataFrame): A dataframe containing all the information of the actors.
-    Movie (pd.DataFrame): A dataframe containing all the information of the movies.
-    min_movies (int): A threshold to use the actors that played in at least `min_movies` movies.
-    
-    Returns:
-    NetworkX Graph: A graph representing the connections between actors.
     """
     
     # Filter actors who have played in at least `min_movies` films
@@ -203,19 +186,15 @@ def Create_Director_Cluster_Highlight(Director_Success_Kmeans):
     return Director_highlight
     
 
-def add_start_age(person_df, person_type='actor'):
+def add_start_age(person_df, person_type="actor"):
     """
-    Adds a column to the person profile containing the starting age of their career.
-    Works for both 'actor' and 'director'.
-
-    person_type: 'actor' or 'director'
+    add a column containing the starting age of their career. Works for "actor" or "director".
     """
-    if person_type == 'actor':
-        age_column = 'actor_age_atmovierelease'
-    elif person_type == 'director':
-        age_column = 'age_at_movie_release'
+    if person_type == "actor":
+        age_column = "actor_age_atmovierelease"
+    elif person_type == "director":
+        age_column = "age_at_movie_release"
 
-    # Handle ages
     person_df[age_column] = person_df[age_column].apply(
         lambda x: [-1 if pd.isna(age) or age < 0 else int(age) for age in x]
     )
@@ -226,48 +205,42 @@ def add_start_age(person_df, person_type='actor'):
     return person_df
 
 
-def add_film_count(person_df, person_type='actor'):
+def add_film_count(person_df, person_type="actor"):
     """
-    Calculates the number of films the actor or director has been involved in.
-    Works for both 'actor' and 'director'.
-
-    person_type: 'actor' or 'director'
+    calculates the number of films the actor or director has been involved in. Works for "actor" and "director".
     """
-    if person_type == 'actor':
-        age_column = 'actor_age_atmovierelease'
-    elif person_type == 'director':
-        age_column = 'age_at_movie_release'
+    if person_type == "actor":
+        age_column = "actor_age_atmovierelease"
+    elif person_type == "director":
+        age_column = "age_at_movie_release"
 
-    # Number of films
-    person_df['Number_of_films'] = person_df[age_column].apply(len)
+    person_df["Number_of_films"] = person_df[age_column].apply(len)
     
     return person_df
 
-def add_ratings(person_df, movie_df, person_type='actor'):
+def add_ratings(person_df, movie_df, person_type="actor"):
     """
-    Creates a list of ratings for each movie that an actor or director has worked on.
-
-    person_type: 'actor' or 'director'
+    creates a list of ratings for each movie that an actor or director has worked on.
     """
-    if person_type == 'actor':
-        id_column = 'Freebase_actor_ID'
-        movie_column = 'Freebase_movie_ID'
-    elif person_type == 'director':
-        id_column = 'IMDb_director_ID'
-        movie_column = 'Freebase_movie_ID'
+    if person_type == "actor":
+        id_column = "Freebase_actor_ID"
+        movie_column = "Freebase_movie_ID"
+    elif person_type == "director":
+        id_column = "IMDb_director_ID"
+        movie_column = "Freebase_movie_ID"
     
     # Ratings per person
     df_explode = person_df.explode(movie_column)
-    df_explode = df_explode.merge(movie_df[['Freebase_movie_ID','Average rating']], on='Freebase_movie_ID', how='left')
-    ratings = df_explode.groupby(id_column)['Average rating'].apply(list)
-    person_df = person_df.merge(ratings.rename('Ratings'), on=id_column, how='left')
+    df_explode = df_explode.merge(movie_df[["Freebase_movie_ID","Average rating"]], on="Freebase_movie_ID", how='left')
+    ratings = df_explode.groupby(id_column)["Average rating"].apply(list)
+    person_df = person_df.merge(ratings.rename("Ratings"), on=id_column, how='left')
 
     return person_df
 
 
 def compute_mean_rating(person_df):
     """
-    Compute the mean rating of the movies that the person worked on (actor/director).
+    compute the mean rating of the movies that the person worked on (actor/director).
     """
     person_df['Mean_Rating'] = person_df['Ratings'].apply(
         lambda ratings: sum(ratings) / len(ratings) if ratings and all(pd.notna(ratings)) else None
@@ -336,9 +309,6 @@ def Final_Pre_processing(Actor_original,Actor_5,Director,Genre_counts_200):
                                       Actor_5['Top_1_Genre'], 'NO_MATCH'), index=Actor_5.index)
     df_directors = pd.DataFrame(np.where(Director['Top_1_Genre'].isin(Genre_counts_200['Movie_genres']), 
                                          Director['Top_1_Genre'], 'NO_MATCH'), index=Director.index)
-    
-    #print(f"Number of actors which their primary genre is not present : {df_actors[df_actors[0]=='NO_MATCH'].shape[0]}")
-    #print(f"Number of directors which their primary genre is not present : {df_directors[df_directors[0]=='NO_MATCH'].shape[0]}")
 
     # Dropping the actor from which their top genre is not in our list of top genres
     to_drop = df_actors[df_actors[0]=='NO_MATCH'].index
@@ -367,6 +337,9 @@ def Eigenvector_Mean_Median(Actor):
 
 
 def Splitting_Louvain(Graph,Actor,random_state=0):
+    """
+    do a clustering using Louvain
+    """
     Graph_bis = Graph.copy()
     partition = community.best_partition(Graph_bis,random_state=random_state)
     values = [partition.get(node) for node in Graph_bis.nodes()]
@@ -386,7 +359,9 @@ def Splitting_Louvain(Graph,Actor,random_state=0):
 
 
 def Centrality_Louvain(Actor_cluster,Cluster,Movie):
-    
+    """
+    compute centrality of aactors in cluster louvain
+    """
     Max_Cluster = Cluster.shape[0]
     Actors_Groups = {}
     Networks = {}
@@ -686,3 +661,25 @@ def merge_top_genre(df_people, df_top_genre, person_type='actor', printt = True)
         print(f"There are now {df_people.shape[0]} {person_type}s after merging and dropping rows where the top genre was not known.")
     
     return df_people
+
+def create_Director_profile(Movie):
+    """
+    create director profile, including their name, birth year, death year, movies they directed, and their age at the release of each movie.
+    """
+    Movie_bis = Movie.copy()
+    Movie_bis["IMDb_director_ID"] = Movie_bis["IMDb_director_ID"].str.split(",")
+    Movie_bis["director_name"] = Movie_bis["Producer name"].str.split(",")
+    Movie_bis["birthYear_director"] = Movie_bis["birthYear producer"].str.split(",")
+    Movie_bis["deathYear_director"] = Movie_bis["deathYear producer"].str.split(",")
+    Movie_exploded = Movie_bis.explode(["IMDb_director_ID", "director_name", "birthYear_director", "deathYear_director"])
+    Movie_exploded["birthYear_director"] = pd.to_numeric(Movie_exploded["birthYear_director"], errors="coerce")
+    Movie_exploded["Movie_release_date"] = pd.to_numeric(Movie_exploded["Movie_release_date"], errors="coerce")
+    Movie_exploded["age_at_movie_release"] = Movie_exploded["Movie_release_date"] - Movie_exploded["birthYear_director"]
+    Director_profile = Movie_exploded.groupby("IMDb_director_ID").agg({
+        "director_name": "first",
+        "birthYear_director": "first",
+        "deathYear_director": "first",
+        "Freebase_movie_ID": list,
+        "age_at_movie_release": list,
+    }).reset_index()
+    return Director_profile
