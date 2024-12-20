@@ -716,6 +716,37 @@ def Print_Comparison_Success(Actor_12_MOVIES, Actor_TOP_Mean_centraty, Actor_TOP
 
     return None
 
+def plot_Success_actor_network(G, k=0.2, seed=42, enable_partition=False):
+    """
+    Plot the actor network using spring layout and optionally cluster with the Louvain method.
+    
+    """
+    start_time = time.time()
+
+    values = None
+    if enable_partition:
+        partition = community.best_partition(G, random_state=42)
+        values = [partition.get(node) for node in G.nodes()]
+        counter = collections.Counter(values)
+        print(f"Partition summary: {counter}")
+
+    sp = nx.spring_layout(G, k=k, seed=seed)
+    plt.figure(figsize=(15, 15))
+    nx.draw_networkx(
+        G,
+        pos=sp,
+        with_labels=False,
+        node_size=5,
+        node_color=values if values is not None else '#1f78b4',
+        width=0.05,
+    )
+    plt.title("Actor network clustered with Louvain method" if enable_partition else "Successfull Actor network", fontsize=15)
+    plt.savefig('Alex_Plot_Graph_Random.png')
+    plt.show()
+
+    end_time = time.time()
+    print(f"Time to compute: {end_time - start_time:.1f} seconds")
+
 
 def plot_elbow_method_Director(Director_dataset_std,cluster_range,random_state = 0,save=False):
     sse = []
