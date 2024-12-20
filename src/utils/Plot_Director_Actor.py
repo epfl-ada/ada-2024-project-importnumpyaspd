@@ -60,30 +60,44 @@ def Elbow_method_genre(Movie,save=False):
     return None
 
 
-def Plot_Camembert_Kmeans(Director_Success_Kmeans,save=False):
+def Plot_Camembert_Kmeans(Director_Success_Kmeans, save=False):
+    """
+    Plot a camembert displaying the distribution of clusters for KMeans with colors from the Viridis palette.
+    """
     # Computing data
     df = Director_Success_Kmeans['Cluster_Label'].value_counts().reset_index()
-    df.columns = ['Label', 'Count'] 
-    
+    df.columns = ['Label', 'Count']
+
+    # Number of clusters
+    n_clusters = len(df)
+
+    # Get Viridis colors for each cluster
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)' for c in viridis]
+
     # Creation of the plot
     fig = go.Figure(
         data=[go.Pie(
             labels=df['Label'],
             values=df['Count'],
-            textinfo="percent", 
+            textinfo="percent",
             hoverinfo="label+value",
-            insidetextorientation="auto"
+            insidetextorientation="auto",
+            marker=dict(colors=colors)  # Apply colors from Viridis
         )]
     )
-    
+
     fig.update_layout(
         title=dict(
-            text="Distribution of Custers",
+            text="Distribution of Clusters",
             x=0.5,  # Center the title horizontally
             y=0.95,  # Slightly lower than the default top position
             xanchor="center",
             yanchor="top"
-        )
+        ),
+        height=600,
+        width=600,
+        plot_bgcolor='white'  # White background for better clarity
     )
     
     # Show and save the plot
@@ -439,14 +453,23 @@ def plot_elbow_method_Director(Director_dataset_std,cluster_range,random_state =
 
 
 def Plot_Weight_Director(Director_Success_KNN, save=False):
+    """
+    Plot the total weight of each director grouped by clusters using the Viridis colormap.
+    """
+
     # Calculate the overall mean and median
     mean_Sum_Weight = np.mean(Director_Success_KNN['Sum_Weight'].dropna())
     median_Sum_Weight = np.median(Director_Success_KNN['Sum_Weight'].dropna())
-    
-    # Define the colors for each cluster 
-    cluster_labels = Director_Success_KNN['Cluster_Label'].unique()
-    colors = px.colors.qualitative.Plotly[:len(cluster_labels)]
-    
+
+    # Define the unique cluster labels and colors using Viridis
+    cluster_labels = sorted(Director_Success_KNN['Cluster_Label'].unique())
+    n_clusters = len(cluster_labels)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
     # Create the figure
     fig = go.Figure()
 
@@ -509,30 +532,38 @@ def Plot_Weight_Director(Director_Success_KNN, save=False):
     
     # Show the figure
     fig.show()
-    
-    return None
 
 
 def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
+    """
+    Plot the weight distribution of edges for directors, using Viridis colormap.
+    """
+
     # Creating a list containing all the weights of the edges
     all_weight = [weight for weight_list in Director_Success_KNN['Weight'] for weight in weight_list]
-    
-    # Calculate the mean and median of the edge's weight
+
+    # Calculate the mean and median of the edge weights
     mean_Sum_Weight = np.mean(all_weight)
     median_Sum_Weight = np.median(all_weight)
 
-    # Define cluster colors
+    # Define cluster colors using Viridis colormap
     clusters = sorted(Director_Success_KNN['Cluster_Label'].unique())
-    colors = px.colors.qualitative.Plotly[:len(clusters)]
-    
-    # Create plot
+    n_clusters = len(clusters)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
+    # Create the figure
     fig = go.Figure()
-    
+
+    # Add histograms and mean lines for each cluster
     for cluster, color in zip(clusters, colors):
         cluster_weights = [weight for weight_list in Director_Success_KNN[Director_Success_KNN['Cluster_Label'] == cluster]['Weight']
                            for weight in weight_list]
         mean_cluster_weight = np.mean(cluster_weights)
-        
+
         # Add histogram
         fig.add_trace(go.Histogram(
             x=cluster_weights,
@@ -540,7 +571,7 @@ def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
             marker_color=color,
             opacity=0.5
         ))
-        
+
         # Add mean line
         fig.add_trace(go.Scatter(
             x=[mean_cluster_weight, mean_cluster_weight],
@@ -549,7 +580,7 @@ def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean (Weight)'
         ))
-    
+
     # Add overall mean and median lines
     fig.add_trace(go.Scatter(
         x=[mean_Sum_Weight, mean_Sum_Weight],
@@ -572,33 +603,51 @@ def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
         xaxis_title="Edge Weight Value",
         yaxis_title="Frequency (Log Scale)",
         yaxis_type="log",
+        barmode='overlay',
         showlegend=True,
         height=600,
-        width=800
+        width=800,
+        legend=dict(
+            title="Clusters",
+            x=1.05,
+            y=1,
+            font=dict(size=10)
+        )
     )
-    
+
+    # Save the figure if needed
     if save:
         fig.write_html('Plot_Edge_Weight_Distribution.html')
-    
+
+    # Show the figure
     fig.show()
 
 
 def Plot_Number_of_Edges(Director_Success_KNN, save=False):
-    # Calculate the mean and median of the number of actors
+    """
+    Plot the distribution of the number of edges (actors) for directors, using Viridis colormap.
+    """
+    # Calculate the overall mean and median of the number of actors
     mean_Number_of_Actor = np.mean(Director_Success_KNN['Number_of_actors'])
     median_Number_of_Actor = np.median(Director_Success_KNN['Number_of_actors'])
 
-    # Define cluster colors
+    # Define cluster colors using Viridis colormap
     clusters = sorted(Director_Success_KNN['Cluster_Label'].unique())
-    colors = px.colors.qualitative.Plotly[:len(clusters)]
-    
-    # Create plot
+    n_clusters = len(clusters)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
+    # Create the figure
     fig = go.Figure()
-    
+
+    # Add histograms and mean lines for each cluster
     for cluster, color in zip(clusters, colors):
         cluster_actors = Director_Success_KNN[Director_Success_KNN['Cluster_Label'] == cluster]['Number_of_actors']
         mean_cluster_actors = np.mean(cluster_actors)
-        
+
         # Add histogram
         fig.add_trace(go.Histogram(
             x=cluster_actors,
@@ -606,7 +655,7 @@ def Plot_Number_of_Edges(Director_Success_KNN, save=False):
             marker_color=color,
             opacity=0.5
         ))
-        
+
         # Add mean line
         fig.add_trace(go.Scatter(
             x=[mean_cluster_actors, mean_cluster_actors],
@@ -615,7 +664,7 @@ def Plot_Number_of_Edges(Director_Success_KNN, save=False):
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean (Actors)'
         ))
-    
+
     # Add overall mean and median lines
     fig.add_trace(go.Scatter(
         x=[mean_Number_of_Actor, mean_Number_of_Actor],
@@ -638,22 +687,38 @@ def Plot_Number_of_Edges(Director_Success_KNN, save=False):
         xaxis_title="Number of Edges",
         yaxis_title="Frequency (Log Scale)",
         yaxis_type="log",
-        showlegend=True,
+        barmode='overlay',
+        legend=dict(
+            title="Clusters",
+            x=1.05,
+            y=1,
+            font=dict(size=10)
+        ),
         height=600,
         width=800
     )
-    
+
+    # Save the figure if needed
     if save:
         fig.write_html('Plot_Number_of_Edges.html')
-    
+
+    # Show the figure
     fig.show()
 
-
 def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
-    # Define the colors for each cluster
+    """
+    Plot the distribution of mean ratings by director, grouped by cluster, using the Viridis colormap.
+    """
+
+    # Define cluster labels and colors using Viridis colormap
     clusters = sorted(Director_Success_KNN['Cluster_Label'].unique())
-    colors = px.colors.qualitative.Plotly[:len(clusters)]
-    
+    n_clusters = len(clusters)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
     # Create the figure
     fig = go.Figure()
 
@@ -662,7 +727,7 @@ def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
         # Extract data for the cluster
         cluster_data = Director_Success_KNN[Director_Success_KNN['Cluster_Label'] == cluster]['Mean_Rating'].dropna()
         mean_cluster_rating = np.mean(cluster_data)
-        
+
         # Add histogram for cluster data
         fig.add_trace(go.Histogram(
             x=cluster_data,
@@ -670,7 +735,7 @@ def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
             marker_color=color,
             opacity=0.5
         ))
-        
+
         # Add mean line for cluster data
         fig.add_trace(go.Scatter(
             x=[mean_cluster_rating, mean_cluster_rating],
@@ -680,6 +745,25 @@ def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
             name=f'Cluster {cluster} Mean'
         ))
 
+    # Add overall mean and median lines
+    overall_mean = np.mean(Director_Success_KNN['Mean_Rating'].dropna())
+    overall_median = np.median(Director_Success_KNN['Mean_Rating'].dropna())
+
+    fig.add_trace(go.Scatter(
+        x=[overall_mean, overall_mean],
+        y=[0, 200],
+        mode='lines',
+        line=dict(color='black', width=2),
+        name='Overall Mean'
+    ))
+    fig.add_trace(go.Scatter(
+        x=[overall_median, overall_median],
+        y=[0, 200],
+        mode='lines',
+        line=dict(color='purple', width=2),
+        name='Overall Median'
+    ))
+
     # Update layout
     fig.update_layout(
         title='Mean Rating of Each Director by Cluster',
@@ -688,24 +772,23 @@ def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
         yaxis_type='log',
         barmode='overlay',
         legend=dict(
-            title='Legend',
-            font=dict(size=10),
+            title='Clusters',
             x=1.05,
-            y=1
+            y=1,
+            font=dict(size=10)
         ),
         height=600,
         width=900
     )
 
-    # Save the figure if needed
+    # Save the figure if requested
     if save:
         fig.write_html('Plot_Mean_Rating_Director_Cluster.html')
     
-    # Show the figure
+    # Show the plot
     fig.show()
 
     return None
-
 
 def Plot_BOY_Director_Cluster(Director_Success_KNN, save=False):
     # Define the colors for each cluster
@@ -883,10 +966,19 @@ def Plot_NOF_Director_Cluster(Director_Success_KNN, Max_movie=100, save=False):
 
 
 def Plot_NOF_Vs_Sum_Weight(Director_Success_KNN, save=False):
-    # Define the colors for each cluster
+    """
+    Scatter plot for Number of Films vs. Sum Weight by Cluster using Viridis colormap.
+    """
+
+    # Define cluster labels and colors using Viridis colormap
     clusters = sorted(Director_Success_KNN['Cluster_Label'].unique())
-    colors = px.colors.qualitative.Plotly[:len(clusters)]
-    
+    n_clusters = len(clusters)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
     # Create the figure
     fig = go.Figure()
 
@@ -896,8 +988,8 @@ def Plot_NOF_Vs_Sum_Weight(Director_Success_KNN, save=False):
         cluster_data = Director_Success_KNN[Director_Success_KNN['Cluster_Label'] == cluster]
         number_of_films = cluster_data['Number_of_films']
         sum_weight = cluster_data['Sum_Weight']
-        
-        # Add cluster scatter points
+
+        # Add scatter points for the cluster
         fig.add_trace(go.Scatter(
             x=number_of_films,
             y=sum_weight,
@@ -905,7 +997,7 @@ def Plot_NOF_Vs_Sum_Weight(Director_Success_KNN, save=False):
             marker=dict(color=color, size=8, opacity=0.6),
             name=f'Cluster {cluster}'
         ))
-        
+
         # Calculate and plot the mean point for the cluster
         mean_x = np.mean(number_of_films)
         mean_y = np.mean(sum_weight)
@@ -917,13 +1009,13 @@ def Plot_NOF_Vs_Sum_Weight(Director_Success_KNN, save=False):
             name=f'Cluster {cluster} Mean'
         ))
 
-    # Update layout
+    # Add gridlines and logarithmic axes
     fig.update_layout(
         title='Number of Films vs. Sum Weight by Cluster',
         xaxis_title='Number of Films (Log Scale)',
         yaxis_title='Sum Weight (Log Scale)',
-        xaxis=dict(type='log'),
-        yaxis=dict(type='log'),
+        xaxis=dict(type='log', gridcolor='lightgrey'),
+        yaxis=dict(type='log', gridcolor='lightgrey'),
         legend=dict(
             title='Clusters',
             font=dict(size=10),
@@ -931,24 +1023,34 @@ def Plot_NOF_Vs_Sum_Weight(Director_Success_KNN, save=False):
             y=1
         ),
         height=600,
-        width=900
+        width=900,
+        plot_bgcolor='white'
     )
 
     # Save the figure if needed
     if save:
         fig.write_html('Plot_NOF_Vs_Sum_Weight.html')
     
-    # Show the figure
+    # Show the plot
     fig.show()
 
     return None
 
 
 def Plot_NOA_Vs_Sum_Weight_Director_Cluster(Director_Success_KNN, save=False):
-    # Define cluster colors
+    """
+    Scatter plot for Number of Actors vs. Sum Weight by Cluster using Viridis colormap.
+    """
+
+    # Define cluster labels and colors using Viridis colormap
     clusters = sorted(Director_Success_KNN['Cluster_Label'].unique())
-    colors = px.colors.qualitative.Plotly[:len(clusters)]
-    
+    n_clusters = len(clusters)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
     # Create the figure
     fig = go.Figure()
 
@@ -958,8 +1060,8 @@ def Plot_NOA_Vs_Sum_Weight_Director_Cluster(Director_Success_KNN, save=False):
         cluster_data = Director_Success_KNN[Director_Success_KNN['Cluster_Label'] == cluster]
         number_of_actors = cluster_data['Number_of_actors']
         sum_weight = cluster_data['Sum_Weight']
-        
-        # Add cluster scatter points
+
+        # Add scatter points for the cluster
         fig.add_trace(go.Scatter(
             x=number_of_actors,
             y=sum_weight,
@@ -967,7 +1069,7 @@ def Plot_NOA_Vs_Sum_Weight_Director_Cluster(Director_Success_KNN, save=False):
             marker=dict(color=color, size=8, opacity=0.6),
             name=f'Cluster {cluster}'
         ))
-        
+
         # Calculate and plot the mean point for the cluster
         mean_x = np.mean(number_of_actors)
         mean_y = np.mean(sum_weight)
@@ -979,13 +1081,13 @@ def Plot_NOA_Vs_Sum_Weight_Director_Cluster(Director_Success_KNN, save=False):
             name=f'Cluster {cluster} Mean'
         ))
 
-    # Update layout
+    # Add gridlines and logarithmic axes
     fig.update_layout(
         title='Number of Actors vs. Sum Weight by Cluster',
         xaxis_title='Number of Actors (Log Scale)',
         yaxis_title='Sum Weight (Log Scale)',
-        xaxis=dict(type='log'),
-        yaxis=dict(type='log'),
+        xaxis=dict(type='log', gridcolor='lightgrey'),
+        yaxis=dict(type='log', gridcolor='lightgrey'),
         legend=dict(
             title='Clusters',
             font=dict(size=10),
@@ -993,24 +1095,34 @@ def Plot_NOA_Vs_Sum_Weight_Director_Cluster(Director_Success_KNN, save=False):
             y=1
         ),
         height=600,
-        width=900
+        width=900,
+        plot_bgcolor='white'
     )
 
     # Save the figure if needed
     if save:
         fig.write_html('Plot_NOA_Vs_Sum_Weight_Director_Cluster.html')
     
-    # Show the figure
+    # Show the plot
     fig.show()
 
     return None
 
 
 def Plot_NOF_Vs_Career_Start(Director_Success_KNN, Max_movie=100, save=False):
-    # Define cluster colors
+    """
+    Scatter plot for Number of Films vs. Career Start Age by Cluster using Viridis colormap.
+    """
+
+    # Define cluster labels and colors using Viridis colormap
     clusters = sorted(Director_Success_KNN['Cluster_Label'].unique())
-    colors = px.colors.qualitative.Plotly[:len(clusters)]
-    
+    n_clusters = len(clusters)
+    viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
+    colors = [
+        f'rgba({int(c[0] * 255)}, {int(c[1] * 255)}, {int(c[2] * 255)}, 0.6)'
+        for c in viridis
+    ]
+
     # Create the figure
     fig = go.Figure()
 
@@ -1044,7 +1156,7 @@ def Plot_NOF_Vs_Career_Start(Director_Success_KNN, Max_movie=100, save=False):
     # Update layout
     fig.update_layout(
         title='Number of Films vs. Career Start Age by Cluster',
-        xaxis_title='Career Start Age (Log Scale)',
+        xaxis_title='Career Start Age',
         yaxis_title='Number of Films (Log Scale)',
         xaxis=dict(type='linear'),
         yaxis=dict(range=[0, Max_movie]),
@@ -1055,7 +1167,8 @@ def Plot_NOF_Vs_Career_Start(Director_Success_KNN, Max_movie=100, save=False):
             y=1
         ),
         height=600,
-        width=900
+        width=900,
+        plot_bgcolor='white'
     )
 
     # Save the figure if needed

@@ -167,12 +167,12 @@ def create_directed_bipartite_network_actor_director(Actors, Directors, min_movi
     return B
 
 
-def Create_Bipartite_Director(Actor_Success, Director, mon_movies=10):
+def Create_Bipartite_Director(Actor_Success, Director, min_movies=10):
     """
     Create the directed bipartite network between successful actors and directors.
     """
     # Create the bipartite directed network
-    Di_B_network = create_directed_bipartite_network_actor_director(Actor_Success, Director, min_movies=mon_movies)
+    Di_B_network = create_directed_bipartite_network_actor_director(Actor_Success, Director, min_movies=min_movies)
     
     # Remove nodes with missing values (NaN)
     nan_nodes = [node for node in Di_B_network.nodes if pd.isna(node)] 

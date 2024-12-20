@@ -68,19 +68,20 @@ def create_actor_career_dataset(Actor):
         Actor_career[f"Nbr_films_{i+1}"] = career_counts[:, i]
 
     #total number of films for each actor
-    Actor_career['Total_nbr_films'] = Actor_career.iloc[:, -max_career_years:].sum(axis=1)
+    Actor_career['Total_number_of_films'] = Actor_career.iloc[:, -max_career_years:].sum(axis=1)
     
     return Actor_career
 
 
-def prepare_career_dataset_KNN(Actor_career):
+def prepare_career_dataset_KMeans(Actor_career):
     """
     Drop unnecessary columns and scale data
     """
-    columns_to_drop = ['Freebase_actor_ID', 'actor_name', 'actor_DOB', 'actor_gender',
+    columns_to_drop = [
+        'Freebase_actor_ID', 'actor_name', 'actor_DOB', 'actor_gender',
         'actor_height', 'ethnicity', 'Freebase_movie_ID', 'actor_age_atmovierelease',
-        'Career_Start_age', 'Career_End_age', 'Career_length']
-    
+        'Career_Start_age', 'Career_End_age', 'Career_length', 'Total_number_of_films', 'Labels'
+    ]
     Career_dataset = Actor_career.drop(columns=columns_to_drop, errors='ignore')
     scaler = StandardScaler()
     Career_dataset_std = scaler.fit_transform(Career_dataset)
@@ -122,7 +123,7 @@ def plot_elbow_method(Career_dataset,cluster_range,random_state = 0):
 
 
 
-def knn_clustering(Career_dataset_std, n_clusters, random_state=0):
+def kmeans_clustering(Career_dataset_std, n_clusters, random_state=0):
     """
     Do the clustering for n_clusters 
     """
@@ -141,7 +142,7 @@ def plot_career_data(Career_dataset, labels, actor_name=None, n_clusters=5, alph
     columns_to_drop = [
         'Freebase_actor_ID', 'actor_name', 'actor_DOB', 'actor_gender',
         'actor_height', 'ethnicity', 'Freebase_movie_ID', 'actor_age_atmovierelease',
-        'Career_Start_age', 'Career_End_age', 'Career_length', 'Total_nbr_films', 'Labels'
+        'Career_Start_age', 'Career_End_age', 'Career_length', 'Total_number_of_films', 'Labels'
     ]
         # Generate the viridis colors with transparency for clusters
     viridis = plt.cm.viridis(np.linspace(0, 1, n_clusters))
@@ -155,6 +156,7 @@ def plot_career_data(Career_dataset, labels, actor_name=None, n_clusters=5, alph
         rgba_colors.append(rgba_color)
     Career_dataset_cleaned = Career_dataset.drop(columns=columns_to_drop, errors='ignore')
     Career_dataset_cleaned.columns = range(len(Career_dataset_cleaned.columns))
+
 
     fig = go.Figure()
 
