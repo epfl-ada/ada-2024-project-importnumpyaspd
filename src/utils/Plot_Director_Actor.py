@@ -60,6 +60,40 @@ def Elbow_method_genre(Movie,save=False):
     return None
 
 
+def Plot_Camembert_Kmeans(Director_Success_Kmeans,save=False):
+    # Computing data
+    df = Director_Success_Kmeans['Cluster_Label'].value_counts().reset_index()
+    df.columns = ['Label', 'Count'] 
+    
+    # Creation of the plot
+    fig = go.Figure(
+        data=[go.Pie(
+            labels=df['Label'],
+            values=df['Count'],
+            textinfo="percent", 
+            hoverinfo="label+value",
+            insidetextorientation="auto"
+        )]
+    )
+    
+    fig.update_layout(
+        title=dict(
+            text="Distribution of Custers",
+            x=0.5,  # Center the title horizontally
+            y=0.95,  # Slightly lower than the default top position
+            xanchor="center",
+            yanchor="top"
+        )
+    )
+    
+    # Show and save the plot
+    if save:
+        fig.write_html('Plot_Camembert_Kmeans.html')    
+    fig.show()
+
+    return None
+
+
 def Plot_Subgraph_Directed_Graph(Di_Graph,Director,director_name='Ingmar Bergman',save=False):
     # determine the ID and the node based on the director name
     for node, attribute in Di_Graph.nodes(data=True):
