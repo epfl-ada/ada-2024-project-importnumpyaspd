@@ -1,31 +1,17 @@
-# Evolution of the network of actors in the film industry through time 
+# "Charting Careers: The Data Map of Acting Success and Collaborations"
 
 ## 1. Abstract : 
-The cinema universe has always been a fascinating world. How many children had the dream to become the next star of hollywood/bollywood (or other)? Unfortunately, very few people has achieved their dream, and it is common sense to think that it need more than passion and willingness, sometimes having a good network, especially with films directors, could help. The project aims to better understand what can make an actor successful, and the angle of research is based on the possible network and relations between actors and directors. This analyse could be done thanks to the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/), a dataset that provides information about actors for over 80000 movies, and the [IMDB database](https://datasets.imdbws.com) for additional data on directors and film ratings. The analysis is done in three parts. First, an analyse of the career profile of actors is performed to identify what makes you a great actor, and what would likely not to. Then, the connections between these successful actors and films directors is analysed mostly throughout network analysis. Finally, since having relations with directors is not the unique reason to success, an analysis between actor-actor who speak different language is also performed, in order to see if worlwide relations could help.
-
-Normalement dans abstract on parle aussi des résultats, mais je sais pas qu'elles sont nos résultats et si ca fait sens, je vous laisse modifier l'abstract en conséquence (aussi vérifier l'orthographe et tout car j'ai écris sans aide de translator, et je suis pas bon en orthographe). Aussi, j'ai mis aucun "we", ou quoi comme cela, c'est une convention et c'est cool si ca reste cela, après osef une peu ce sera lu par un crack du code, pas victor hugo.
-
-## 1. Abstract (old) :
-The dataset that will be analysed during this project is the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/). This dataset provides lots of pieces of information about +80000 movies. With this dataset as a base, this project aims to analyse and map the evolution of the network of actors through time. This interconnected system between actors, directors and films is interesting as it is governed and influenced by a multitude of factors that we want to analyse, such as ethnicity, gender, movie genre, etc. To perform our analysis, we will first find and collect more [data](https://datasets.imdbws.com) regarding film directors. After that, the network of actors and directors will be mapped and linked. A multitude of clusters could arise from those networks and will be analysed. Moreover, different statistical analyses will be performed in order to see the correlation between different factors. By doing so, it is possible to conclude patterns across the different evolutions of each actors’networks. The evolution of these networks will also be analyzed in conjunction with the evolution of the actors' careers, to see if any trends emerge.
+The cinema universe has always been a fascinating world. How many children had the dream to become the next star of hollywood/bollywood (or other)? Unfortunately, very few people has achieved their dream, and it is common sense to think that it need more than passion and willingness, sometimes having a good network, especially with films directors, could help. The project aims to better understand what can make an actor successful, and the angle of research is based on the possible network and relations between actors and directors. This analyse could be done thanks to the [CMU Movie Summary corpus](http://www.cs.cmu.edu/~ark/personas/), a dataset that provides information about actors for over 80000 movies, and the [IMDB database](https://datasets.imdbws.com) for additional data on directors and film ratings. The analysis is done in three parts. First, an analyse of the career profile of actors is performed to identify what makes you a prolific actor, and what would likely not to. Then, the connections between these successful actors and films directors is analysed mostly throughout directed graph analysis. Finally, since having relations with directors is not the unique reason to success, an analysis between actor-actor is also performed. More specifically, we analyze the network from the point of view of the languages used in the films, to see whether global connections could help build a prolific career.
 
 ## 2. Research Questions : 
 Principal axes:
-* Actor Network: Career
-    * What are the main factors characterizing the careers of the actors?
+* Career profiles:
+    * What are the main factors characterizing the careers profiles of the actors?
 * Networking between actors and movie directors
     * What made an actor successful?
     * What are the type of directors that are linked to successful actors?
 * Actor Network through languages
-    * What is the relationship between different actors all across the world?
-
-## 2. Research Questions (old): 
-Principal axes : 
-* Network through time
-  * What are the main factors characterizing the careers of the actors and the evolution of the networks?
-* Factor determining clusters (ethnicity, genre, genre of movie)
-  * What are the main characteristics of the actors behind the formation of clusters in film production collaboration networks?
-* Network between actors and directors
-  * What is the link between successful actors and directors?
+    * What is the link between languages and networking, and what is the relationship between career profiles and the degree of internationalization of actors?
 
 ## 3. Additional datasets : 
 [IMDb database](https://datasets.imdbws.com) : Huge database of information about films (millions of movies, series,...), directors,... [(readme.md from IMDb)](https://developer.imdb.com/non-commercial-datasets/)
@@ -33,7 +19,7 @@ Principal axes :
 
 ## 4. Methods : 
 ### Part 1 : Beginning
-* **additional dataset** : After choosing and deciding on the project, it was decided that we should search for ways to enrich our networks. Our solution was to add more information about the movie as well as more people to the networks. Hence, we chose to use the IMDb dataset, which is presented in the above section.
+* **additional dataset** : After choosing and deciding on the project, it was decided that we should search for ways to enrich our networks. Our solution was to add more information about the movie as well as more people to the networks. (Directors) Hence, we chose to use the IMDb dataset, which is presented in the above section.
 * **Literature review** : In parallel to the research of new data, some group members were tasked with finding relevant information about network theory and useful import in Python. In ADA’s course from last year, week 10 is dedicated to the study of networks, which was a lot of help. We also read the documentation from [NetworkX](https://networkx.org/). However, due to the large number of actors/directors and movies in our networks, we may also use another Python library such as [igraph](https://igraph.org/) or [graph-tool](https://graph-tool.skewed.de/) which are more powerful.
 * **Pre-processing data** : As the additional dataset was chosen, it was now time to merge the two datasets in order to enrich our data. The process behind the merging is explained in the data_preprocessing.ipynb notebook. In addition to that, the ethnicity of each actor was also found and added and scrapped from the web. Finally, we were able to create two pickle files which contain all the necessary information. 
 * **Verify feasibility** : As the data was pre-processed and usable, we verified the feasibility of our research questions and adjusted them in accordance with our data and perspective of the projects. The results and the visualizations are available in the results.ipynb notebook.
