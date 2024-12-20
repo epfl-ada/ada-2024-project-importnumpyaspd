@@ -45,10 +45,7 @@ Principal axes:
 ├── src                         <- Source code
 │   ├── data                            <- Data directory
 │   │     └── data_preprocessing.ipynb       <- Notebook that reproduces all the preprocessing steps in order to get Actor.pkl and Movie.pkl (Merge CMU and IMDb)
-│   ├── models                          <- Model directory
 │   ├── utils                           <- Utility directory
-│
-├── tests                       <- Tests of any kind
 │
 ├── results.ipynb               <- a well-structured notebook showing the results
 │
