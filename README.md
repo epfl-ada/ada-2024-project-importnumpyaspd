@@ -48,7 +48,7 @@ Principal axes:
 │
 ├── src                         <- Source code
 │   ├── data                            <- Data directory
-│   │     └── data_preprocessing.ipynb          <- Notebook that reproduces all the preprocessing steps in order to get Actor.pkl and Movie.pkl (Merge CMU and IMDb)
+│   │     └── data_preprocessing.ipynb  <- Notebook that reproduces all the preprocessing steps in order to get Actor.pkl and Movie.pkl (Merge CMU and IMDb)
 │   └──utils                    <- Utility directory
 │         ├── career.py                 <- helper functions for section 1 (Career profiles)
 │         ├── Director_Actor.py         <- helper functions for section 1 (Networking between actors and movie directors)
