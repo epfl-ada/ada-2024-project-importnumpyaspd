@@ -55,6 +55,7 @@ Principal axes:
 │         ├── langue.py                 <- helper functions for section 1 (Actor Network through languages)
 │         └── plot.py                   <- helper functions for plotting  (All sections)
 ├── results.ipynb               <- a well-structured notebook showing the results
+├── Director_Actor.ipynb        <- a well-structured notebook showing the specific results of Director_Actor
 ├── .gitignore                  <- List of files ignored by git
 ├── pip_requirements.txt        <- File for installing Python dependencies
 └── README.md
@@ -65,7 +66,7 @@ Principal axes:
 
 Thomas Walter: Data retrieval, data cleaning, web site development. 
 
-Emile Favre: Network clustering, ethnic analysis, language analysis. 
+Emile Favre: Network clustering, ethnicity analysis, language analysis. 
 
 Alexandre Mascaro: Actor/Director relations networks creation and analysis.
 
