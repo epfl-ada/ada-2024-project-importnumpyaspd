@@ -18,25 +18,20 @@ Principal axes:
 * As the datasets are quite big (500mo to 1Go), they were not pushed to the repo in github. Specific information about the ratings and the profiles of the directors were taken from the database. The pre-processing is explained in data_preprocessing.ipynb. The readme.md of this dataset can be found in the data folder inside the IMDb folder.
 
 ## 4. Methods : 
-### Part 1 : Beginning
-* **additional dataset** : After choosing and deciding on the project, it was decided that we should search for ways to enrich our networks. Our solution was to add more information about the movie as well as more people to the networks. (Directors) Hence, we chose to use the IMDb dataset, which is presented in the above section.
-* **Literature review** : In parallel to the research of new data, some group members were tasked with finding relevant information about network theory and useful import in Python. In ADA’s course from last year, week 10 is dedicated to the study of networks, which was a lot of help. We also read the documentation from [NetworkX](https://networkx.org/). However, due to the large number of actors/directors and movies in our networks, we may also use another Python library such as [igraph](https://igraph.org/) or [graph-tool](https://graph-tool.skewed.de/) which are more powerful.
-* **Pre-processing data** : As the additional dataset was chosen, it was now time to merge the two datasets in order to enrich our data. The process behind the merging is explained in the data_preprocessing.ipynb notebook. In addition to that, the ethnicity of each actor was also found and added and scrapped from the web. Finally, we were able to create two pickle files which contain all the necessary information. 
-* **Verify feasibility** : As the data was pre-processed and usable, we verified the feasibility of our research questions and adjusted them in accordance with our data and perspective of the projects. The results and the visualizations are available in the results.ipynb notebook.
+### K-means unsuperviesed : 
+* **K-means** : 
+* **Elbow's method** :
+* **Centroïds** :
+### Network graphs and directed graphs : 
+* **Basic Networks**: 
+* **By parted directed graph** :
+* **Eigen-vector centrality** :
+* **Spring layout algorithm** :
+* **Louvain algorithm** :
+### Statistical tests :
+* **t-Test** :
+* **Chi2 test** :
 
-### Part 2 : Networking
-* **Mapping the network**: Using Python library such as NetworkX in order to make a graph about the network of actors and directors. A potentially sparse matrix may also be used in order to better visualize the network due to its large size.
-* **Network’s metrics and statistics** : Based on our research, multiple metrics related to networks will be computed such as: Degree distribution, community structure, average shortest path length, navigability, centrality measures (degree, closeness, betweenness, katz, PageRank). Based on those metrics, statistical computation may potentially be done in order to find factors that greatly influenced the evolution/form of the networks.
-
-### Part 3 : Unsupervised learning and networks through time 
-* **Unsupervised learning** : To answer our second research question, clustering methods such as K-NN and Louvain's method will be used to find cluster in our network and to define “type” of actors.
-* **Networks through time** : The previous mapping will be redone for each year to have an actual evolution of the networks. As the computation may be time-consuming, this may only be done for actors who have interesting careers. 
-* **Statistics** : The purpose will be to determine correlations between actors and different careers based on different statistical tests (Chi2, t-test,…) on factors and then analyse them. 
-
-### Part 4 : Analysing and reporting 
-* **Observation and analysis** : After part 3 is done and results and information have been obtained, analyses and conclusions will be made. 
-* **Plot and representation** : In order to showcase our results and to better analyse them, new graph and plot may be done based on our results and statistical findings. 
-* **Redaction** : Redaction of the report containing the observations/conclusions on Jekyll
 
 ## 5. Organization of the github repo : 
 
