@@ -191,12 +191,12 @@ def Create_Bipartite_Director(Actor_Success, Director, mon_movies=10):
     return Di_B_network
     
 
-def Create_Director_Cluster_Highlight(Director_Success_KNN):
+def Create_Director_Cluster_Highlight(Director_Success_Kmeans):
     Director_list = ['Quentin Tarantino', 'Woody Allen', 'Steven Spielberg',
                      'Lesli Linka Glatte', 'Thomas Schlamme', 'James Redford', 'Jed Johnson',
                      'David Miller', 'Mick Jackson', 'Paul Mazursky',
                      'Jack Sholder', 'Ernest Pintoff', 'Preston A. Whitmore II']
-    Director_highlight = Director_Success_KNN.copy()
+    Director_highlight = Director_Success_Kmeans.copy()
     Director_highlight = Director_highlight[Director_highlight['director_name'].isin(Director_list)]
     Director_highlight.sort_values(by=['Cluster_Label'],inplace=True)
 
@@ -366,9 +366,9 @@ def Eigenvector_Mean_Median(Actor):
     return Actor_mean, Actor_median
 
 
-def Splitting_Louvain(Graph,Actor):
+def Splitting_Louvain(Graph,Actor,random_state=0):
     Graph_bis = Graph.copy()
-    partition = community.best_partition(Graph_bis)
+    partition = community.best_partition(Graph_bis,random_state=random_state)
     values = [partition.get(node) for node in Graph_bis.nodes()]
     counter=collections.Counter(values)
         
@@ -494,7 +494,7 @@ def keep_successful_actor(Actor, Genre_counts):
     return Actor_Success
 
 
-def prepare_director_dataset_KNN(Director):
+def prepare_director_dataset_Kmeans(Director):
     """
     drop columns and scale in prevision of kmeans
     """
@@ -511,9 +511,9 @@ def prepare_director_dataset_KNN(Director):
     return Director_dataset, Director_dataset_std
 
 
-def knn_clustering_director(Director, Director_dataset_std, n_clusters, random_state=0):
+def Kmeans_clustering_director(Director, Director_dataset_std, n_clusters, random_state=0):
     """
-    perform knn
+    perform Kmeans
     """
     # Filter out the rows where Mean_Rating is NaN
     Director_labels = Director.dropna(subset='Mean_Rating').copy()  # Use `.copy()` to avoid view modification issues

@@ -60,6 +60,39 @@ def Elbow_method_genre(Movie,save=False):
     return None
 
 
+def Plot_Subgraph_Directed_Graph(Di_Graph,Director,director_name='Ingmar Bergman',save=False):
+    # determine the ID and the node based on the director name
+    for node, attribute in Di_Graph.nodes(data=True):
+        if attribute.get('name') == director_name:
+            director_node = node
+            break
+    _, nodes_director = nx.bipartite.sets(Di_Graph) 
+    
+    # Compute the actor connected to the director 
+    Actors_nodes = list(Di_Graph.predecessors(director_node))  
+    nodes = [director_node] + Actors_nodes
+    subgraph = Di_Graph.subgraph(nodes)
+    
+    pos_sub = nx.bipartite_layout(subgraph, Actors_nodes)
+    
+    # Draw the graph
+    plt.figure(figsize=(8, 6))
+    labels_node = {n: subgraph.nodes[n]['name'] for n in subgraph.nodes}
+    #labels_node = {n: subgraph.nodes[n]['weight'] if n == director_node else '' for n in subgraph.nodes}
+    labels_edge = {e: subgraph.edges[e]['weight'] for e in subgraph.edges}
+    nx.draw(subgraph, pos_sub,with_labels=True, node_color=['skyblue' if node in Actors_nodes else 'lightgreen' for node in subgraph.nodes()],  
+            arrowsize=20, edge_color='gray', node_size=800, font_size=10, 
+            labels=labels_node
+           )
+    plt.title("Example of a node from the Bipartite Directed Network", fontsize=16)
+    nx.draw_networkx_edge_labels(subgraph, pos_sub, edge_labels=labels_edge)
+    if save:
+        plt.savefig(f'Plot_Subgraph_Directed_Graph{director_name}.png', transparent=True)
+    plt.show()
+
+    return None
+    
+
 def Plot_Degree_Actor(Actor,save=False, describe = False):
     data = Actor['Degree_final'].dropna()
 
@@ -102,7 +135,7 @@ def Plot_Degree_Actor(Actor,save=False, describe = False):
     return None
 
 
-def Plot_NOF_Actor(Actor,max_movie=200,save=False):
+def Plot_NOF_Actor(Actor,max_movie=200,describe=False,save=False):
     # mean and median
     mean_actor = np.mean(Actor["Number_of_films"])
     median_actor = np.median(Actor["Number_of_films"])
@@ -399,7 +432,7 @@ def Plot_Weight_Director(Director_Success_KNN, save=False):
         # Add mean line for the cluster
         fig.add_trace(go.Scatter(
             x=[mean_cluster_weight, mean_cluster_weight],
-            y=[0, max(np.histogram(cluster_data, bins=50)[0])],
+            y=[0, 1000],
             mode='lines',
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean'
@@ -408,14 +441,14 @@ def Plot_Weight_Director(Director_Success_KNN, save=False):
     # Add overall mean and median lines
     fig.add_trace(go.Scatter(
         x=[mean_Sum_Weight, mean_Sum_Weight],
-        y=[0, 1],
+        y=[0, 1000],
         mode='lines',
         line=dict(color='black', width=2),
         name='Overall Mean'
     ))
     fig.add_trace(go.Scatter(
         x=[median_Sum_Weight, median_Sum_Weight],
-        y=[0, 1],
+        y=[0, 1000],
         mode='lines',
         line=dict(color='purple', width=2),
         name='Overall Median'
@@ -477,7 +510,7 @@ def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
         # Add mean line
         fig.add_trace(go.Scatter(
             x=[mean_cluster_weight, mean_cluster_weight],
-            y=[0, 1],
+            y=[0, 20000],
             mode='lines',
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean (Weight)'
@@ -486,14 +519,14 @@ def Plot_Edge_Weight_Distribution(Director_Success_KNN, save=False):
     # Add overall mean and median lines
     fig.add_trace(go.Scatter(
         x=[mean_Sum_Weight, mean_Sum_Weight],
-        y=[0, 1],
+        y=[0, 20000],
         mode='lines',
         line=dict(color='black', width=2),
         name='Overall Mean (Weight)'
     ))
     fig.add_trace(go.Scatter(
         x=[median_Sum_Weight, median_Sum_Weight],
-        y=[0, 1],
+        y=[0, 20000],
         mode='lines',
         line=dict(color='purple', width=2),
         name='Overall Median (Weight)'
@@ -543,7 +576,7 @@ def Plot_Number_of_Edges(Director_Success_KNN, save=False):
         # Add mean line
         fig.add_trace(go.Scatter(
             x=[mean_cluster_actors, mean_cluster_actors],
-            y=[0, 1],
+            y=[0, 1000],
             mode='lines',
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean (Actors)'
@@ -552,14 +585,14 @@ def Plot_Number_of_Edges(Director_Success_KNN, save=False):
     # Add overall mean and median lines
     fig.add_trace(go.Scatter(
         x=[mean_Number_of_Actor, mean_Number_of_Actor],
-        y=[0, 1],
+        y=[0, 1000],
         mode='lines',
         line=dict(color='black', width=2),
         name='Overall Mean (Actors)'
     ))
     fig.add_trace(go.Scatter(
         x=[median_Number_of_Actor, median_Number_of_Actor],
-        y=[0, 1],
+        y=[0, 1000],
         mode='lines',
         line=dict(color='purple', width=2),
         name='Overall Median (Actors)'
@@ -607,7 +640,7 @@ def Plot_Mean_Rating_Director_Cluster(Director_Success_KNN, save=False):
         # Add mean line for cluster data
         fig.add_trace(go.Scatter(
             x=[mean_cluster_rating, mean_cluster_rating],
-            y=[0, 1],
+            y=[0, 200],
             mode='lines',
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean'
@@ -781,7 +814,7 @@ def Plot_NOF_Director_Cluster(Director_Success_KNN, Max_movie=100, save=False):
         # Add mean line for cluster data
         fig.add_trace(go.Scatter(
             x=[mean_cluster_films, mean_cluster_films],
-            y=[0, 1],
+            y=[0, 1200],
             mode='lines',
             line=dict(color=color, dash='dash'),
             name=f'Cluster {cluster} Mean'
