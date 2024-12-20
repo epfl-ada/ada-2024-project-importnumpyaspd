@@ -62,9 +62,14 @@ Principal axes:
 
 
 ## 6. Organization within the team 
+
 Thomas Walter: Data retrieval, data cleaning, web site development. 
+
 Emile Favre: Network clustering, ethnic analysis, language analysis. 
+
 Alexandre Mascaro: Actor/Director relations networks creation and analysis.
+
 Thibault Schiesser: Data retrieval, data cleaning, network clustering, language analysis. 
+
 Pierre Maillard: undirected graph creation, career profile creation and analysis.
 
