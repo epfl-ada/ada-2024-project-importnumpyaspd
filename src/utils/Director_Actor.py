@@ -189,6 +189,19 @@ def Create_Bipartite_Director(Actor_Success, Director, mon_movies=10):
         print("Bipartite graph generated successfully!")
     
     return Di_B_network
+    
+
+def Create_Director_Cluster_Highlight(Director_Success_KNN):
+    Director_list = ['Quentin Tarantino', 'Woody Allen', 'Steven Spielberg',
+                     'Lesli Linka Glatte', 'Thomas Schlamme', 'James Redford', 'Jed Johnson',
+                     'David Miller', 'Mick Jackson', 'Paul Mazursky',
+                     'Jack Sholder', 'Ernest Pintoff', 'Preston A. Whitmore II']
+    Director_highlight = Director_Success_KNN.copy()
+    Director_highlight = Director_highlight[Director_highlight['director_name'].isin(Director_list)]
+    Director_highlight.sort_values(by=['Cluster_Label'],inplace=True)
+
+    return Director_highlight
+    
 
 def add_start_age(person_df, person_type='actor'):
     """
