@@ -341,6 +341,7 @@ def Plot_Camembert_Kmeans(Director_Success_Kmeans, save=False):
     df = Director_Success_Kmeans['Cluster_Label'].value_counts().reset_index()
     df.columns = ['Label', 'Count']
 
+    df = df.sort_values(by=["Label"])
     # Number of clusters
     n_clusters = len(df)
 
