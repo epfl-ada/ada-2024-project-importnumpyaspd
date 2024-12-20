@@ -209,7 +209,7 @@ def plot_gender_proportions_by_cluster(dataset, n_clusters=2, alpha=0.55, save=F
         autosize=True,
         title_text="Gender Proportions Across Clusters",
         title_x=0.5,
-        showlegend=False,
+        showlegend=True,
         template="plotly_white",
     )
     
@@ -341,7 +341,7 @@ def Plot_Camembert_Kmeans(Director_Success_Kmeans, save=False):
     df = Director_Success_Kmeans['Cluster_Label'].value_counts().reset_index()
     df.columns = ['Label', 'Count']
 
-    df = df.sort_values(by=["Label"])
+    df = df.sort_values(by=["Label"], ascending=True)
     # Number of clusters
     n_clusters = len(df)
 
@@ -412,7 +412,7 @@ def Plot_Subgraph_Directed_Graph(Di_Graph,Director,director_name='Ingmar Bergman
     plt.title("Example of a node from the Bipartite Directed Network", fontsize=16)
     nx.draw_networkx_edge_labels(subgraph, pos_sub, edge_labels=labels_edge)
     if save:
-        plt.savefig(f'Plot_Subgraph_Directed_Graph{director_name}.png', transparent=True)
+        plt.savefig(f'Plot_Subgraph_Directed_Graph{director_name}.png', transparent=False)
     plt.show()
 
     return None
@@ -717,7 +717,7 @@ def Print_Comparison_Success(Actor_12_MOVIES, Actor_TOP_Mean_centraty, Actor_TOP
 
     return None
 
-def plot_Success_actor_network(G, k=0.2, seed=42, enable_partition=False):
+def plot_Success_actor_network(G, k=0.2, seed=42, enable_partition=False, save = False):
     """
     Plot the actor network using spring layout and optionally cluster with the Louvain method.
     
@@ -743,7 +743,9 @@ def plot_Success_actor_network(G, k=0.2, seed=42, enable_partition=False):
     )
     plt.title("Actor network clustered with Louvain method" if enable_partition else "Successfull Actor network", fontsize=15)
     plt.savefig('Alex_Plot_Graph_Random.png')
-    plt.show()
+    
+    if save:
+        plt.show()
 
     end_time = time.time()
     print(f"Time to compute: {end_time - start_time:.1f} seconds")
@@ -1707,7 +1709,7 @@ def plot_network_with_language(G, save=False):
 
     # Save plot as an image if the save parameter is True
     if save:
-        plt.savefig("network_with_languages.png", format="PNG", bbox_inches='tight', transparent=True)
+        plt.savefig("network_with_languages.png", format="PNG", bbox_inches='tight', transparent=False)
 
     # Show the plot
     plt.show()
